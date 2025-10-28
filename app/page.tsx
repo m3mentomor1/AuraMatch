@@ -6,8 +6,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import {
   Sparkles,
-  Heart,
-  Zap,
   Users,
   ArrowRight,
   Star,
@@ -15,7 +13,10 @@ import {
   Sun,
   Menu,
   X,
+  MessageCircle,
+  Settings,
 } from "lucide-react";
+import Link from "next/link";
 
 export default function LandingPage() {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
@@ -122,15 +123,17 @@ export default function LandingPage() {
             >
               How AuraMatch Works
             </Button>
-            <Button
-              className={`text-base font-medium h-11 px-6 text-white ${
-                isDay
-                  ? "bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
-                  : "bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
-              }`}
-            >
-              Sign In
-            </Button>
+            <Link href="/signin">
+              <Button
+                className={`text-base font-medium h-11 px-6 text-white ${
+                  isDay
+                    ? "bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                    : "bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+                }`}
+              >
+                Sign In
+              </Button>
+            </Link>
           </div>
 
           {/* Mobile Menu Button */}
@@ -171,16 +174,18 @@ export default function LandingPage() {
             >
               How AuraMatch Works
             </Button>
-            <Button
-              className={`w-full justify-center text-base text-white ${
-                isDay
-                  ? "bg-gradient-to-r from-purple-600 to-pink-600"
-                  : "bg-gradient-to-r from-purple-500 to-pink-500"
-              }`}
-              onClick={() => setMenuOpen(false)}
-            >
-              Sign In
-            </Button>
+            <Link href="/signin">
+              <Button
+                className={`w-full justify-center text-base text-white ${
+                  isDay
+                    ? "bg-gradient-to-r from-purple-600 to-pink-600"
+                    : "bg-gradient-to-r from-purple-500 to-pink-500"
+                }`}
+                onClick={() => setMenuOpen(false)}
+              >
+                Sign In
+              </Button>
+            </Link>
           </motion.div>
         )}
       </AnimatePresence>
@@ -239,14 +244,16 @@ export default function LandingPage() {
             match.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mt-12">
-            <Button
-              size="lg"
-              className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-10 py-7 text-xl hover:from-purple-700 hover:to-pink-700 flex items-center justify-center"
-            >
-              Get Started Free
-              <ArrowRight className="w-6 h-6 ml-2" />
-            </Button>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mt-12">
+            <Link href="/signup">
+              <Button
+                size="lg"
+                className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-10 py-7 text-xl hover:from-purple-700 hover:to-pink-700 flex items-center justify-center"
+              >
+                Get Started Free
+                <ArrowRight className="w-6 h-6 ml-2" />
+              </Button>
+            </Link>
           </div>
 
           <div className="grid grid-cols-3 gap-8 max-w-3xl mx-auto mt-20">
@@ -306,21 +313,21 @@ export default function LandingPage() {
         <div className="grid md:grid-cols-3 gap-8">
           {[
             {
-              icon: <Sparkles className="w-8 h-8 text-white" />,
-              title: "Aura Analysis",
-              text: "Our unique algorithm analyzes your photos, interests, and energy to create an authentic aura profile that captures your true essence.",
+              icon: <Users className="w-8 h-8 text-white" />,
+              title: "Discovery and Matching",
+              text: "Browse and discover potential matches based on compatibility and shared interests.",
               gradient: "from-purple-500 to-pink-500",
             },
             {
-              icon: <Zap className="w-8 h-8 text-white" />,
-              title: "Energy Matching",
-              text: "We match you with people whose energy frequencies complement yours, creating deeper, more meaningful connections.",
+              icon: <MessageCircle className="w-8 h-8 text-white" />,
+              title: "Chat With Your Matches",
+              text: "Start meaningful conversations with your matches directly in the app.",
               gradient: "from-pink-500 to-blue-500",
             },
             {
-              icon: <Heart className="w-8 h-8 text-white" />,
-              title: "Vibe Verification",
-              text: "Real-time compatibility scores help you understand the connection potential before you even say hello.",
+              icon: <Settings className="w-8 h-8 text-white" />,
+              title: "Manage Your Matches",
+              text: "Organize and manage your matches, keeping track of connections effortlessly.",
               gradient: "from-blue-500 to-purple-500",
             },
           ].map((f, i) => (
@@ -359,7 +366,7 @@ export default function LandingPage() {
       {/* CTA Section */}
       <section className="relative z-10 px-6 py-20 max-w-5xl mx-auto">
         <motion.div
-          className={`p-12 rounded-3xl text-white text-center ${
+          className={`min-h-[40vh] flex flex-col justify-center p-12 rounded-3xl text-white text-center ${
             isDay
               ? "bg-gradient-to-br from-purple-500 to-pink-500"
               : "bg-gradient-to-br from-purple-600 to-pink-600"
@@ -369,20 +376,21 @@ export default function LandingPage() {
           transition={{ duration: 0.7, ease: "easeOut" }}
           viewport={{ once: true, amount: 0.3 }}
         >
-          <Users className="w-16 h-16 mx-auto mb-6" />
           <h2 className="text-4xl md:text-5xl font-bold mb-4">
             Ready to Find Your Match?
           </h2>
           <p className="text-xl mb-8 opacity-90">
             Join thousands already discovering their perfect energy match
           </p>
-          <Button
-            size="lg"
-            className="bg-white text-purple-600 hover:bg-gray-100 text-xl px-10 py-7"
-          >
-            Get Started Now
-            <ArrowRight className="w-6 h-6 ml-2" />
-          </Button>
+          <Link href="/signup">
+            <Button
+              size="lg"
+              className="bg-white text-purple-600 hover:bg-gray-100 text-xl px-10 py-7"
+            >
+              Get Started Now
+              <ArrowRight className="w-6 h-6 ml-2" />
+            </Button>
+          </Link>
         </motion.div>
       </section>
 
