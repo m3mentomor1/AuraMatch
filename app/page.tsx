@@ -17,11 +17,14 @@ import {
   Settings,
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function LandingPage() {
+  const router = useRouter();
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [isDay, setIsDay] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -31,12 +34,27 @@ export default function LandingPage() {
     return () => window.removeEventListener("mousemove", handleMouseMove);
   }, []);
 
+  useEffect(() => {
+    // Check if user is authenticated
+    const token = localStorage.getItem("token");
+    const userData = localStorage.getItem("user");
+    setIsAuthenticated(!!(token && userData));
+  }, []);
+
   const toggleTheme = () => setIsDay(!isDay);
   const toggleMenu = () => setMenuOpen(!menuOpen);
 
   const scrollToFeatures = () => {
     const featuresSection = document.getElementById("features-section");
     featuresSection?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  const handleAuthAction = () => {
+    if (isAuthenticated) {
+      router.push("/home");
+    } else {
+      router.push("/signin");
+    }
   };
 
   return (
@@ -111,7 +129,11 @@ export default function LandingPage() {
                 : "bg-white/10 hover:bg-white/20"
             }`}
           >
-            {isDay ? <Moon className="w-6 h-6" /> : <Sun className="w-6 h-6" />}
+            {isDay ? (
+              <Moon className="w-6 h-6 relative top-[0.5px]" />
+            ) : (
+              <Sun className="w-6 h-6 relative top-[0.5px]" />
+            )}
           </button>
 
           {/* Desktop Menu */}
@@ -123,17 +145,23 @@ export default function LandingPage() {
             >
               How AuraMatch Works
             </Button>
-            <Link href="/signin">
-              <Button
-                className={`text-base font-medium h-11 px-6 text-white ${
-                  isDay
-                    ? "bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
-                    : "bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
-                }`}
-              >
-                Sign In
-              </Button>
-            </Link>
+            <Button
+              onClick={handleAuthAction}
+              className={`text-base font-medium h-11 px-6 text-white ${
+                isDay
+                  ? "bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                  : "bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+              }`}
+            >
+              {isAuthenticated ? (
+                <>
+                  Go to Home
+                  <ArrowRight className="w-5 h-5 ml-2" />
+                </>
+              ) : (
+                "Sign In"
+              )}
+            </Button>
           </div>
 
           {/* Mobile Menu Button */}
@@ -174,18 +202,26 @@ export default function LandingPage() {
             >
               How AuraMatch Works
             </Button>
-            <Link href="/signin">
-              <Button
-                className={`w-full justify-center text-base text-white ${
-                  isDay
-                    ? "bg-gradient-to-r from-purple-600 to-pink-600"
-                    : "bg-gradient-to-r from-purple-500 to-pink-500"
-                }`}
-                onClick={() => setMenuOpen(false)}
-              >
-                Sign In
-              </Button>
-            </Link>
+            <Button
+              onClick={() => {
+                handleAuthAction();
+                setMenuOpen(false);
+              }}
+              className={`w-full justify-center text-base text-white ${
+                isDay
+                  ? "bg-gradient-to-r from-purple-600 to-pink-600"
+                  : "bg-gradient-to-r from-purple-500 to-pink-500"
+              }`}
+            >
+              {isAuthenticated ? (
+                <>
+                  Go to Home
+                  <ArrowRight className="w-5 h-5 ml-2" />
+                </>
+              ) : (
+                "Sign In"
+              )}
+            </Button>
           </motion.div>
         )}
       </AnimatePresence>
@@ -245,15 +281,26 @@ export default function LandingPage() {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mt-12">
-            <Link href="/signup">
+            {isAuthenticated ? (
               <Button
                 size="lg"
+                onClick={() => router.push("/home")}
                 className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-10 py-7 text-xl hover:from-purple-700 hover:to-pink-700 flex items-center justify-center"
               >
-                Get Started Free
+                Go to Home
                 <ArrowRight className="w-6 h-6 ml-2" />
               </Button>
-            </Link>
+            ) : (
+              <Link href="/signup">
+                <Button
+                  size="lg"
+                  className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-10 py-7 text-xl hover:from-purple-700 hover:to-pink-700 flex items-center justify-center"
+                >
+                  Get Started Free
+                  <ArrowRight className="w-6 h-6 ml-2" />
+                </Button>
+              </Link>
+            )}
           </div>
 
           <div className="grid grid-cols-3 gap-8 max-w-3xl mx-auto mt-20">
@@ -382,15 +429,26 @@ export default function LandingPage() {
           <p className="text-xl mb-8 opacity-90">
             Join thousands already discovering their perfect energy match
           </p>
-          <Link href="/signup">
+          {isAuthenticated ? (
             <Button
               size="lg"
-              className="bg-white text-purple-600 hover:bg-gray-100 text-xl px-10 py-7"
+              onClick={() => router.push("/home")}
+              className="bg-white text-purple-600 hover:bg-gray-100 text-xl px-10 py-7 mx-auto"
             >
-              Get Started Now
+              Go to Home
               <ArrowRight className="w-6 h-6 ml-2" />
             </Button>
-          </Link>
+          ) : (
+            <Link href="/signup">
+              <Button
+                size="lg"
+                className="bg-white text-purple-600 hover:bg-gray-100 text-xl px-10 py-7"
+              >
+                Get Started Now
+                <ArrowRight className="w-6 h-6 ml-2" />
+              </Button>
+            </Link>
+          )}
         </motion.div>
       </section>
 

@@ -14,15 +14,21 @@ import {
   Upload,
   Eye,
   EyeOff,
+  Loader2,
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 export default function SignUpPage() {
+  const router = useRouter();
   const [isDay, setIsDay] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
-    showPassword: false, // 👈 added this
+    showPassword: false,
     firstName: "",
     lastName: "",
     age: "",
@@ -52,7 +58,7 @@ export default function SignUpPage() {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!profilePicture) {
@@ -61,7 +67,40 @@ export default function SignUpPage() {
     }
 
     setError("");
-    console.log("Sign up:", { ...formData, profilePicture });
+    setLoading(true);
+
+    try {
+      const formDataToSend = new FormData();
+      formDataToSend.append("email", formData.email);
+      formDataToSend.append("password", formData.password);
+      formDataToSend.append("firstName", formData.firstName);
+      formDataToSend.append("lastName", formData.lastName);
+      formDataToSend.append("age", formData.age);
+      formDataToSend.append("bio", formData.bio);
+      formDataToSend.append("profilePicture", profilePicture);
+
+      const response = await fetch(`${API_URL}/api/auth/signup`, {
+        method: "POST",
+        body: formDataToSend,
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to create account");
+      }
+
+      // Save token to localStorage
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+
+      // Redirect to home/discovery page
+      router.push("/home");
+    } catch (err: any) {
+      setError(err.message || "Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -154,6 +193,16 @@ export default function SignUpPage() {
               Start your journey to find someone that matches your aura
             </p>
 
+            {error && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-500"
+              >
+                {error}
+              </motion.div>
+            )}
+
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Email */}
               <div>
@@ -171,6 +220,7 @@ export default function SignUpPage() {
                   onChange={handleInputChange}
                   placeholder="your@email.com"
                   required
+                  disabled={loading}
                   className={`w-full h-12 ${
                     isDay
                       ? "bg-white border-purple-200"
@@ -196,6 +246,7 @@ export default function SignUpPage() {
                     onChange={handleInputChange}
                     placeholder="Enter your password"
                     required
+                    disabled={loading}
                     className={`w-full h-12 pr-12 ${
                       isDay
                         ? "bg-white border-purple-200"
@@ -247,6 +298,7 @@ export default function SignUpPage() {
                     onChange={handleInputChange}
                     placeholder="John"
                     required
+                    disabled={loading}
                     className={`w-full h-12 ${
                       isDay
                         ? "bg-white border-purple-200"
@@ -269,6 +321,7 @@ export default function SignUpPage() {
                     value={formData.lastName}
                     onChange={handleInputChange}
                     placeholder="Doe"
+                    disabled={loading}
                     className={`w-full h-12 ${
                       isDay
                         ? "bg-white border-purple-200"
@@ -296,6 +349,7 @@ export default function SignUpPage() {
                   required
                   min="18"
                   max="100"
+                  disabled={loading}
                   className={`w-full h-12 ${
                     isDay
                       ? "bg-white border-purple-200"
@@ -319,6 +373,7 @@ export default function SignUpPage() {
                   onChange={handleInputChange}
                   placeholder="Tell us about yourself..."
                   rows={4}
+                  disabled={loading}
                   className={`w-full resize-none ${
                     isDay
                       ? "bg-white border-purple-200"
@@ -339,8 +394,8 @@ export default function SignUpPage() {
 
                 <div
                   className={`flex items-center gap-4 p-4 rounded-xl border-2 border-dashed transition-all duration-300 ${
-                    error
-                      ? "border-red-500 bg-red-500/10 animate-pulse"
+                    error && !profilePicture
+                      ? "border-red-500 bg-red-500/10"
                       : isDay
                       ? "border-purple-300 hover:border-purple-400 bg-white"
                       : "border-purple-500/30 hover:border-purple-500/50 bg-white/5"
@@ -372,6 +427,7 @@ export default function SignUpPage() {
                       id="profile-picture"
                       accept="image/*"
                       onChange={handleFileChange}
+                      disabled={loading}
                       className="hidden"
                     />
                     <label
@@ -393,23 +449,21 @@ export default function SignUpPage() {
                     </p>
                   </div>
                 </div>
-
-                {error && (
-                  <motion.p
-                    initial={{ opacity: 0, y: -5 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="text-red-500 text-sm mt-2"
-                  >
-                    {error}
-                  </motion.p>
-                )}
               </div>
 
               <Button
                 type="submit"
-                className="w-full h-12 bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700 text-base font-medium"
+                disabled={loading}
+                className="w-full h-12 bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700 text-base font-medium disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Create Account
+                {loading ? (
+                  <>
+                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                    Creating Account...
+                  </>
+                ) : (
+                  "Create Account"
+                )}
               </Button>
             </form>
 

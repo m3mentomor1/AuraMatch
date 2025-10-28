@@ -119,4 +119,43 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  /* Custom Scrollbar Styles - Transparent background */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(147, 51, 234, 0.5) transparent;
+  }
+
+  /* Webkit browsers (Chrome, Safari, Edge) */
+  *::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background: rgba(147, 51, 234, 0.5);
+    border-radius: 4px;
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    background: rgba(147, 51, 234, 0.7);
+  }
+
+  /* For light/day mode - lighter scrollbar */
+  .light-mode *::-webkit-scrollbar-thumb {
+    background: rgba(147, 51, 234, 0.3);
+  }
+
+  .light-mode *::-webkit-scrollbar-thumb:hover {
+    background: rgba(147, 51, 234, 0.5);
+  }
+
+  /* Firefox light mode */
+  .light-mode * {
+    scrollbar-color: rgba(147, 51, 234, 0.3) transparent;
+  }
 }
