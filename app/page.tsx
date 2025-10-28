@@ -1,8 +1,9 @@
+// \frontend\app\page.tsx
 "use client";
 
 import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   Sparkles,
   Heart,
@@ -12,26 +13,36 @@ import {
   Star,
   Moon,
   Sun,
+  Menu,
+  X,
 } from "lucide-react";
 
 export default function LandingPage() {
-  const [email, setEmail] = useState("");
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [isDay, setIsDay] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       setMousePosition({ x: e.clientX, y: e.clientY });
     };
-
     window.addEventListener("mousemove", handleMouseMove);
     return () => window.removeEventListener("mousemove", handleMouseMove);
   }, []);
 
   const toggleTheme = () => setIsDay(!isDay);
+  const toggleMenu = () => setMenuOpen(!menuOpen);
+
+  const scrollToFeatures = () => {
+    const featuresSection = document.getElementById("features-section");
+    featuresSection?.scrollIntoView({ behavior: "smooth" });
+  };
 
   return (
-    <div
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 1.2 }}
       className={`min-h-screen transition-all duration-1000 ${
         isDay
           ? "bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50"
@@ -74,7 +85,7 @@ export default function LandingPage() {
 
       {/* Navigation */}
       <nav
-        className={`relative z-10 px-6 py-6 flex justify-between items-center ${
+        className={`relative z-20 px-6 py-6 flex justify-between items-center ${
           isDay ? "text-gray-800" : "text-white"
         }`}
       >
@@ -88,45 +99,108 @@ export default function LandingPage() {
             AuraMatch
           </span>
         </div>
-        <div className="flex items-center gap-6">
+
+        <div className="flex items-center gap-4">
+          {/* Theme Toggle */}
           <button
             onClick={toggleTheme}
-            className={`p-2 rounded-full transition-all ${
+            className={`p-3 rounded-full transition-all flex items-center justify-center ${
               isDay
                 ? "bg-white/50 hover:bg-white/70"
                 : "bg-white/10 hover:bg-white/20"
             }`}
           >
-            {isDay ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
+            {isDay ? <Moon className="w-6 h-6" /> : <Sun className="w-6 h-6" />}
           </button>
-          <Button variant="ghost" className="hidden md:block">
-            How It Works
-          </Button>
-          <Button variant="ghost" className="hidden md:block">
-            About
-          </Button>
-          <Button
-            className={`${
-              isDay
-                ? "bg-gradient-to-r from-purple-600 to-pink-600"
-                : "bg-gradient-to-r from-purple-500 to-pink-500"
-            } text-white`}
+
+          {/* Desktop Menu */}
+          <div className="hidden md:flex items-center gap-6">
+            <Button
+              variant="ghost"
+              className="text-base font-medium h-11 px-6"
+              onClick={scrollToFeatures}
+            >
+              How AuraMatch Works
+            </Button>
+            <Button
+              className={`text-base font-medium h-11 px-6 text-white ${
+                isDay
+                  ? "bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                  : "bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+              }`}
+            >
+              Sign In
+            </Button>
+          </div>
+
+          {/* Mobile Menu Button */}
+          <button
+            className="md:hidden p-3 rounded-full bg-white/10 hover:bg-white/20 transition-all"
+            onClick={toggleMenu}
           >
-            Sign In
-          </Button>
+            {menuOpen ? (
+              <X className="w-6 h-6" />
+            ) : (
+              <Menu className="w-6 h-6" />
+            )}
+          </button>
         </div>
       </nav>
 
+      {/* Mobile Dropdown */}
+      <AnimatePresence>
+        {menuOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3 }}
+            className={`absolute top-20 right-6 z-10 md:hidden rounded-2xl shadow-lg p-4 flex flex-col gap-3 z-[9999] ${
+              isDay
+                ? "bg-white/90 text-gray-800 border border-purple-200"
+                : "bg-white/10 text-white border border-purple-500/30 backdrop-blur-md"
+            }`}
+          >
+            <Button
+              variant="ghost"
+              className="w-full justify-center text-base"
+              onClick={() => {
+                scrollToFeatures();
+                setMenuOpen(false);
+              }}
+            >
+              How AuraMatch Works
+            </Button>
+            <Button
+              className={`w-full justify-center text-base text-white ${
+                isDay
+                  ? "bg-gradient-to-r from-purple-600 to-pink-600"
+                  : "bg-gradient-to-r from-purple-500 to-pink-500"
+              }`}
+              onClick={() => setMenuOpen(false)}
+            >
+              Sign In
+            </Button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Hero Section */}
       <section className="relative z-10 px-6 py-20 max-w-7xl mx-auto">
-        <div className="text-center space-y-8">
+        <motion.div
+          className="text-center space-y-8"
+          initial={{ opacity: 0, y: 50 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          viewport={{ once: true, amount: 0.3 }}
+        >
           <div className="inline-block">
             <div
               className={`inline-flex items-center gap-2 px-4 py-2 rounded-full ${
                 isDay
-                  ? "bg-white/60 backdrop-blur-sm"
-                  : "bg-white/10 backdrop-blur-sm"
-              } border ${isDay ? "border-purple-200" : "border-purple-500/30"}`}
+                  ? "bg-white/60 backdrop-blur-sm border border-purple-200"
+                  : "bg-white/10 backdrop-blur-sm border border-purple-500/30"
+              }`}
             >
               <Star
                 className={`w-4 h-4 ${
@@ -138,7 +212,7 @@ export default function LandingPage() {
                   isDay ? "text-gray-700" : "text-gray-200"
                 }`}
               >
-                AI-Powered Aura Matching
+                Energy-Based Matching
               </span>
             </div>
           </div>
@@ -156,94 +230,67 @@ export default function LandingPage() {
           </h1>
 
           <p
-            className={`text-xl md:text-2xl max-w-2xl mx-auto ${
+            className={`text-xl md:text-2xl max-w-3xl mx-auto ${
               isDay ? "text-gray-600" : "text-gray-300"
             }`}
           >
-            AuraMatch uses advanced AI to analyze your energy, vibe, and
-            personality—connecting you with people who truly resonate with your
-            soul.
+            Connect with people who truly resonate with your soul. AuraMatch
+            analyzes your energy, vibe, and personality to find your perfect
+            match.
           </p>
 
-          {/* Email Signup */}
-          <div className="max-w-md mx-auto mt-12">
-            <div
-              className={`flex flex-col sm:flex-row gap-3 p-2 rounded-2xl ${
-                isDay
-                  ? "bg-white/60 backdrop-blur-sm"
-                  : "bg-white/10 backdrop-blur-sm"
-              } border ${isDay ? "border-purple-200" : "border-purple-500/30"}`}
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mt-12">
+            <Button
+              size="lg"
+              className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-10 py-7 text-xl hover:from-purple-700 hover:to-pink-700 flex items-center justify-center"
             >
-              <Input
-                type="email"
-                placeholder="Enter your email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className={`flex-1 border-0 ${
-                  isDay
-                    ? "bg-transparent"
-                    : "bg-white/5 text-white placeholder:text-gray-400"
-                } focus-visible:ring-0 focus-visible:ring-offset-0`}
-              />
-              <Button className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 hover:from-purple-700 hover:to-pink-700">
-                Join Waitlist
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
-            </div>
-            <p
-              className={`text-sm mt-3 ${
-                isDay ? "text-gray-500" : "text-gray-400"
-              }`}
-            >
-              ✨ Be among the first 1,000 to experience AuraMatch
-            </p>
+              Get Started Free
+              <ArrowRight className="w-6 h-6 ml-2" />
+            </Button>
           </div>
 
-          {/* Stats */}
           <div className="grid grid-cols-3 gap-8 max-w-3xl mx-auto mt-20">
-            <div className={`${isDay ? "text-gray-800" : "text-white"}`}>
-              <div className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-                10K+
-              </div>
-              <div
-                className={`text-sm ${
-                  isDay ? "text-gray-600" : "text-gray-300"
-                }`}
+            {[
+              { label: "Auras Matched", value: "10K+" },
+              { label: "Energy Match Rate", value: "94%" },
+              { label: "Vibes Analyzed", value: "2M+" },
+            ].map((stat, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: i * 0.2 }}
+                viewport={{ once: true }}
+                className={isDay ? "text-gray-800" : "text-white"}
               >
-                Auras Matched
-              </div>
-            </div>
-            <div className={`${isDay ? "text-gray-800" : "text-white"}`}>
-              <div className="text-4xl font-bold bg-gradient-to-r from-pink-600 to-blue-600 bg-clip-text text-transparent">
-                94%
-              </div>
-              <div
-                className={`text-sm ${
-                  isDay ? "text-gray-600" : "text-gray-300"
-                }`}
-              >
-                Energy Match Rate
-              </div>
-            </div>
-            <div className={`${isDay ? "text-gray-800" : "text-white"}`}>
-              <div className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                2M+
-              </div>
-              <div
-                className={`text-sm ${
-                  isDay ? "text-gray-600" : "text-gray-300"
-                }`}
-              >
-                Vibes Analyzed
-              </div>
-            </div>
+                <div className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                  {stat.value}
+                </div>
+                <div
+                  className={`text-sm ${
+                    isDay ? "text-gray-600" : "text-gray-300"
+                  }`}
+                >
+                  {stat.label}
+                </div>
+              </motion.div>
+            ))}
           </div>
-        </div>
+        </motion.div>
       </section>
 
       {/* Features Section */}
-      <section className="relative z-10 px-6 py-20 max-w-7xl mx-auto">
-        <div className="text-center mb-16">
+      <section
+        id="features-section"
+        className="relative z-10 px-6 py-20 max-w-7xl mx-auto"
+      >
+        <motion.div
+          className="text-center mb-16"
+          initial={{ opacity: 0, y: 50 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          viewport={{ once: true, amount: 0.2 }}
+        >
           <h2
             className={`text-4xl md:text-5xl font-bold mb-4 ${
               isDay ? "text-gray-900" : "text-white"
@@ -254,97 +301,73 @@ export default function LandingPage() {
           <p className={`text-lg ${isDay ? "text-gray-600" : "text-gray-300"}`}>
             Science meets intuition in the perfect match
           </p>
-        </div>
+        </motion.div>
 
         <div className="grid md:grid-cols-3 gap-8">
-          {/* Feature 1 */}
-          <div
-            className={`p-8 rounded-3xl ${
-              isDay
-                ? "bg-white/60 backdrop-blur-sm"
-                : "bg-white/10 backdrop-blur-sm"
-            } border ${
-              isDay ? "border-purple-200" : "border-purple-500/30"
-            } hover:scale-105 transition-transform duration-300`}
-          >
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center mb-6">
-              <Sparkles className="w-8 h-8 text-white" />
-            </div>
-            <h3
-              className={`text-2xl font-bold mb-4 ${
-                isDay ? "text-gray-900" : "text-white"
-              }`}
+          {[
+            {
+              icon: <Sparkles className="w-8 h-8 text-white" />,
+              title: "Aura Analysis",
+              text: "Our unique algorithm analyzes your photos, interests, and energy to create an authentic aura profile that captures your true essence.",
+              gradient: "from-purple-500 to-pink-500",
+            },
+            {
+              icon: <Zap className="w-8 h-8 text-white" />,
+              title: "Energy Matching",
+              text: "We match you with people whose energy frequencies complement yours, creating deeper, more meaningful connections.",
+              gradient: "from-pink-500 to-blue-500",
+            },
+            {
+              icon: <Heart className="w-8 h-8 text-white" />,
+              title: "Vibe Verification",
+              text: "Real-time compatibility scores help you understand the connection potential before you even say hello.",
+              gradient: "from-blue-500 to-purple-500",
+            },
+          ].map((f, i) => (
+            <motion.div
+              key={i}
+              className={`p-8 rounded-3xl border hover:scale-105 transition-transform duration-300 ${
+                isDay
+                  ? "bg-white/60 border-purple-200"
+                  : "bg-white/10 border-purple-500/30"
+              } backdrop-blur-sm`}
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: i * 0.2 }}
+              viewport={{ once: true }}
             >
-              AI Aura Analysis
-            </h3>
-            <p className={`${isDay ? "text-gray-600" : "text-gray-300"}`}>
-              Our advanced AI analyzes your photos, interests, and energy to
-              create a unique aura profile that captures your true essence.
-            </p>
-          </div>
-
-          {/* Feature 2 */}
-          <div
-            className={`p-8 rounded-3xl ${
-              isDay
-                ? "bg-white/60 backdrop-blur-sm"
-                : "bg-white/10 backdrop-blur-sm"
-            } border ${
-              isDay ? "border-purple-200" : "border-purple-500/30"
-            } hover:scale-105 transition-transform duration-300`}
-          >
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-pink-500 to-blue-500 flex items-center justify-center mb-6">
-              <Zap className="w-8 h-8 text-white" />
-            </div>
-            <h3
-              className={`text-2xl font-bold mb-4 ${
-                isDay ? "text-gray-900" : "text-white"
-              }`}
-            >
-              Energy Matching
-            </h3>
-            <p className={`${isDay ? "text-gray-600" : "text-gray-300"}`}>
-              We match you with people whose energy frequencies complement
-              yours, creating deeper, more meaningful connections.
-            </p>
-          </div>
-
-          {/* Feature 3 */}
-          <div
-            className={`p-8 rounded-3xl ${
-              isDay
-                ? "bg-white/60 backdrop-blur-sm"
-                : "bg-white/10 backdrop-blur-sm"
-            } border ${
-              isDay ? "border-purple-200" : "border-purple-500/30"
-            } hover:scale-105 transition-transform duration-300`}
-          >
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center mb-6">
-              <Heart className="w-8 h-8 text-white" />
-            </div>
-            <h3
-              className={`text-2xl font-bold mb-4 ${
-                isDay ? "text-gray-900" : "text-white"
-              }`}
-            >
-              Vibe Verification
-            </h3>
-            <p className={`${isDay ? "text-gray-600" : "text-gray-300"}`}>
-              Real-time compatibility scores help you understand the connection
-              potential before you even say hello.
-            </p>
-          </div>
+              <div
+                className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${f.gradient} flex items-center justify-center mb-6`}
+              >
+                {f.icon}
+              </div>
+              <h3
+                className={`text-2xl font-bold mb-4 ${
+                  isDay ? "text-gray-900" : "text-white"
+                }`}
+              >
+                {f.title}
+              </h3>
+              <p className={isDay ? "text-gray-600" : "text-gray-300"}>
+                {f.text}
+              </p>
+            </motion.div>
+          ))}
         </div>
       </section>
 
       {/* CTA Section */}
       <section className="relative z-10 px-6 py-20 max-w-5xl mx-auto">
-        <div
-          className={`p-12 rounded-3xl ${
+        <motion.div
+          className={`p-12 rounded-3xl text-white text-center ${
             isDay
               ? "bg-gradient-to-br from-purple-500 to-pink-500"
               : "bg-gradient-to-br from-purple-600 to-pink-600"
-          } text-white text-center`}
+          }`}
+          initial={{ opacity: 0, scale: 0.95 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.7, ease: "easeOut" }}
+          viewport={{ once: true, amount: 0.3 }}
         >
           <Users className="w-16 h-16 mx-auto mb-6" />
           <h2 className="text-4xl md:text-5xl font-bold mb-4">
@@ -355,12 +378,12 @@ export default function LandingPage() {
           </p>
           <Button
             size="lg"
-            className="bg-white text-purple-600 hover:bg-gray-100 text-lg px-8 py-6"
+            className="bg-white text-purple-600 hover:bg-gray-100 text-xl px-10 py-7"
           >
             Get Started Now
-            <ArrowRight className="w-5 h-5 ml-2" />
+            <ArrowRight className="w-6 h-6 ml-2" />
           </Button>
-        </div>
+        </motion.div>
       </section>
 
       {/* Footer */}
@@ -371,7 +394,13 @@ export default function LandingPage() {
             : "border-purple-500/30 text-gray-400"
         }`}
       >
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+        <motion.div
+          className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4"
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7 }}
+          viewport={{ once: true, amount: 0.3 }}
+        >
           <div className="flex items-center gap-2">
             <Sparkles
               className={`w-6 h-6 ${
@@ -391,9 +420,9 @@ export default function LandingPage() {
               Contact
             </a>
           </div>
-          <div className="text-sm">© 2024 AuraMatch. All rights reserved.</div>
-        </div>
+          <div className="text-sm">© 2025 AuraMatch. All rights reserved.</div>
+        </motion.div>
       </footer>
-    </div>
+    </motion.div>
   );
 }
