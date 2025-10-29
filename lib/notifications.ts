@@ -1,4 +1,4 @@
-// \frontend\lib\notifications.ts
+// frontend/lib/notifications.ts
 
 export interface NotificationOptions {
   title: string;
@@ -49,46 +49,45 @@ class NotificationService {
   }
 
   public async show(options: NotificationOptions): Promise<void> {
-    // If browser doesn't support notifications or permission denied
-    if (typeof window === "undefined" || !("Notification" in window)) {
-      this.showFallbackNotification(options);
-      return;
-    }
+    console.log("show() called with:", options.title);
 
-    if (this.permission !== "granted") {
-      const granted = await this.requestPermission();
-      if (!granted) {
-        this.showFallbackNotification(options);
-        return;
+    // Always show fallback notification for in-app display
+    this.showFallbackNotification(options);
+
+    // Also try to show browser notification if permission granted
+    if (
+      typeof window !== "undefined" &&
+      "Notification" in window &&
+      this.permission === "granted"
+    ) {
+      try {
+        const notification = new Notification(options.title, {
+          body: options.body,
+          icon: options.icon || "/favicon.ico",
+          badge: "/favicon.ico",
+          tag: "auramatch-notification",
+          requireInteraction: false,
+        });
+
+        if (options.onClick) {
+          notification.onclick = () => {
+            window.focus();
+            options.onClick?.();
+            notification.close();
+          };
+        }
+
+        // Auto close after 5 seconds
+        setTimeout(() => notification.close(), 5000);
+      } catch (error) {
+        console.error("Error showing browser notification:", error);
       }
-    }
-
-    try {
-      const notification = new Notification(options.title, {
-        body: options.body,
-        icon: options.icon || "/favicon.ico",
-        badge: "/favicon.ico",
-        tag: "auramatch-notification",
-        requireInteraction: false,
-      });
-
-      if (options.onClick) {
-        notification.onclick = () => {
-          window.focus();
-          options.onClick?.();
-          notification.close();
-        };
-      }
-
-      // Auto close after 5 seconds
-      setTimeout(() => notification.close(), 5000);
-    } catch (error) {
-      console.error("Error showing notification:", error);
-      this.showFallbackNotification(options);
     }
   }
 
   private showFallbackNotification(options: NotificationOptions): void {
+    console.log("showFallbackNotification() called");
+
     // Create in-app notification as fallback
     const notificationEl = document.createElement("div");
     notificationEl.className = "auramatch-notification";
@@ -107,12 +106,16 @@ class NotificationService {
         animation: slideInRight 0.3s ease-out;
         cursor: pointer;
       ">
-        <div style="font-weight: bold; margin-bottom: 4px;">${options.title}</div>
-        <div style="font-size: 14px; opacity: 0.95;">${options.body}</div>
+        <div style="font-weight: bold; margin-bottom: 4px;">${this.escapeHtml(
+          options.title
+        )}</div>
+        <div style="font-size: 14px; opacity: 0.95;">${this.escapeHtml(
+          options.body
+        )}</div>
       </div>
     `;
 
-    // Add animation styles
+    // Add animation styles if not already present
     if (!document.getElementById("notification-styles")) {
       const style = document.createElement("style");
       style.id = "notification-styles";
@@ -142,6 +145,7 @@ class NotificationService {
     }
 
     document.body.appendChild(notificationEl);
+    console.log("Notification element appended to body");
 
     if (options.onClick) {
       notificationEl.onclick = () => {
@@ -157,13 +161,23 @@ class NotificationService {
   }
 
   private removeFallbackNotification(element: HTMLElement): void {
-    element.style.animation = "slideOutRight 0.3s ease-out";
+    const innerDiv = element.querySelector("div") as HTMLElement;
+    if (innerDiv) {
+      innerDiv.style.animation = "slideOutRight 0.3s ease-out";
+    }
     setTimeout(() => {
       element.remove();
     }, 300);
   }
 
+  private escapeHtml(text: string): string {
+    const div = document.createElement("div");
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
   public showMatchNotification(userName: string, userImage: string): void {
+    console.log("showMatchNotification() called for:", userName);
     this.show({
       title: "🎉 It's a Match!",
       body: `You and ${userName} liked each other!`,
@@ -180,6 +194,7 @@ class NotificationService {
     message: string,
     userImage: string
   ): void {
+    console.log("showMessageNotification() called for:", userName);
     const truncatedMessage =
       message.length > 50 ? message.substring(0, 50) + "..." : message;
 

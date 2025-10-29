@@ -140,7 +140,7 @@ export default function DiscoverTab({
               : "bg-white/10 border-purple-500/30"
           }`}
         >
-          <div className="relative h-80 sm:h-96 overflow-hidden">
+          <div className="relative h-100 sm:h-115 overflow-hidden">
             <img
               src={currentCard.profilePicture}
               alt={currentCard.firstName}
@@ -190,7 +190,7 @@ export default function DiscoverTab({
             {currentIndex + 1} of {users.length}
           </p>
           <p
-            className={`text-xs mt-2 ${
+            className={`md:text-md text-md mt-2 ${
               isDay ? "text-gray-500" : "text-gray-500"
             }`}
           >

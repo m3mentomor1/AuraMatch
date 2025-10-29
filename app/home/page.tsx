@@ -14,6 +14,7 @@ import MatchesTab from "./components/MatchesTab";
 import MessagesTab from "./components/MessagesTab";
 import MatchPopup from "./components/MatchPopup";
 import UnmatchDialog from "./components/UnmatchDialog";
+import AgeFilterModal from "./components/AgeFilterModal";
 import { User, Match, Message } from "@/app/types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
@@ -23,6 +24,7 @@ export default function HomePage() {
   const [isDay, setIsDay] = useState(false);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [users, setUsers] = useState<User[]>([]);
+  const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<
@@ -39,7 +41,13 @@ export default function HomePage() {
   const [showUnmatchDialog, setShowUnmatchDialog] = useState(false);
   const [unmatchingUser, setUnmatchingUser] = useState<Match | null>(null);
   const [swipeDirection, setSwipeDirection] = useState<string | null>(null);
-  const [lastMessageCount, setLastMessageCount] = useState<number>(0);
+  const [previousMatchIds, setPreviousMatchIds] = useState<Set<number>>(
+    new Set()
+  );
+  const [previousUnreadCount, setPreviousUnreadCount] = useState<number>(0);
+  const [showAgeFilter, setShowAgeFilter] = useState(false);
+  const [minAge, setMinAge] = useState(18);
+  const [maxAge, setMaxAge] = useState(100);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -51,12 +59,32 @@ export default function HomePage() {
       return;
     }
 
-    setCurrentUser(JSON.parse(userData));
+    const user = JSON.parse(userData);
+    setCurrentUser(user);
+
+    // Load saved age filter preferences
+    const savedMinAge = localStorage.getItem("minAge");
+    const savedMaxAge = localStorage.getItem("maxAge");
+    if (savedMinAge) setMinAge(parseInt(savedMinAge));
+    if (savedMaxAge) setMaxAge(parseInt(savedMaxAge));
+
+    notificationService.requestPermission().then((granted) => {
+      console.log("Notification permission:", granted ? "granted" : "denied");
+    });
+
     fetchUsers(token);
     fetchMatches(token);
     fetchUnreadCount(token);
-    notificationService.requestPermission();
   }, []);
+
+  useEffect(() => {
+    // Filter users based on age range
+    const filtered = users.filter(
+      (user) => user.age >= minAge && user.age <= maxAge
+    );
+    setFilteredUsers(filtered);
+    setCurrentIndex(0);
+  }, [users, minAge, maxAge]);
 
   useEffect(() => {
     if (selectedMatch && activeTab === "messages") {
@@ -73,13 +101,12 @@ export default function HomePage() {
     if (!token) return;
 
     const interval = setInterval(() => {
-      fetchUnreadCount(token);
-      fetchMatches(token);
+      checkForNewMatches(token);
       checkForNewMessages(token);
-    }, 5000);
+    }, 3000);
 
     return () => clearInterval(interval);
-  }, [lastMessageCount]);
+  }, [previousMatchIds, previousUnreadCount]);
 
   useEffect(() => {
     scrollToBottom();
@@ -112,6 +139,11 @@ export default function HomePage() {
       if (!response.ok) throw new Error("Failed to fetch matches");
       const data = await response.json();
       setMatches(data);
+
+      const currentMatchIds = new Set<number>(
+        data.map((m: Match) => m.matchId)
+      );
+      setPreviousMatchIds(currentMatchIds);
     } catch (error) {
       console.error("Error fetching matches:", error);
     }
@@ -125,6 +157,7 @@ export default function HomePage() {
       if (!response.ok) throw new Error("Failed to fetch unread count");
       const data = await response.json();
       setUnreadCount(data.unreadCount);
+      setPreviousUnreadCount(data.unreadCount);
     } catch (error) {
       console.error("Error fetching unread count:", error);
     }
@@ -151,34 +184,84 @@ export default function HomePage() {
     }
   };
 
+  const checkForNewMatches = async (token: string) => {
+    try {
+      const response = await fetch(`${API_URL}/api/matches`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!response.ok) return;
+
+      const data = await response.json();
+      const currentMatchIds = new Set<number>(
+        data.map((m: Match) => m.matchId)
+      );
+
+      const newMatches = data.filter(
+        (m: Match) => !previousMatchIds.has(m.matchId)
+      );
+
+      if (newMatches.length > 0) {
+        console.log("New matches detected:", newMatches.length);
+        newMatches.forEach((match: Match) => {
+          console.log("Showing notification for match:", match.firstName);
+          notificationService.showMatchNotification(
+            match.firstName,
+            match.profilePicture
+          );
+        });
+      }
+
+      setMatches(data);
+      setPreviousMatchIds(currentMatchIds);
+    } catch (error) {
+      console.error("Error checking for new matches:", error);
+    }
+  };
+
   const checkForNewMessages = async (token: string) => {
     try {
       const response = await fetch(`${API_URL}/api/messages/unread-count`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!response.ok) return;
-      const data = await response.json();
-      const newCount = data.unreadCount;
 
-      if (newCount > lastMessageCount && lastMessageCount > 0) {
+      const data = await response.json();
+      const newUnreadCount = data.unreadCount;
+
+      if (newUnreadCount > previousUnreadCount) {
+        console.log(
+          "New messages detected, count increased from",
+          previousUnreadCount,
+          "to",
+          newUnreadCount
+        );
+
         const matchesResponse = await fetch(`${API_URL}/api/matches`, {
           headers: { Authorization: `Bearer ${token}` },
         });
+
         if (matchesResponse.ok) {
           const matchesData = await matchesResponse.json();
-          const matchWithNewMessage = matchesData.find(
+          const matchesWithUnread = matchesData.filter(
             (m: Match) => m.unreadCount > 0
           );
-          if (matchWithNewMessage) {
+
+          if (matchesWithUnread.length > 0) {
+            const match = matchesWithUnread[0];
+            console.log("Showing message notification for:", match.firstName);
             notificationService.showMessageNotification(
-              matchWithNewMessage.firstName,
-              matchWithNewMessage.lastMessage || "New message",
-              matchWithNewMessage.profilePicture
+              match.firstName,
+              match.lastMessage || "New message",
+              match.profilePicture
             );
           }
+
+          setMatches(matchesData);
         }
       }
-      setLastMessageCount(newCount);
+
+      setUnreadCount(newUnreadCount);
+      setPreviousUnreadCount(newUnreadCount);
     } catch (error) {
       console.error("Error checking for new messages:", error);
     }
@@ -186,7 +269,7 @@ export default function HomePage() {
 
   const handleSwipe = async (direction: "left" | "right") => {
     const token = localStorage.getItem("token");
-    const currentCard = users[currentIndex];
+    const currentCard = filteredUsers[currentIndex];
     if (!currentCard) return;
 
     setSwipeDirection(direction);
@@ -209,14 +292,18 @@ export default function HomePage() {
       const data = await response.json();
 
       if (data.isMatch) {
+        console.log("Match detected! Showing popup and notification");
         setMatchedUser(currentCard);
         setShowMatchPopup(true);
-        fetchMatches(token!);
+
         notificationService.showMatchNotification(
           currentCard.firstName,
           currentCard.profilePicture
         );
+
+        await fetchMatches(token!);
       }
+
       setCurrentIndex(currentIndex + 1);
     } catch (error) {
       console.error("Error recording swipe:", error);
@@ -288,6 +375,14 @@ export default function HomePage() {
     }
   };
 
+  const handleApplyAgeFilter = (min: number, max: number) => {
+    setMinAge(min);
+    setMaxAge(max);
+    localStorage.setItem("minAge", min.toString());
+    localStorage.setItem("maxAge", max.toString());
+    setShowAgeFilter(false);
+  };
+
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
@@ -325,6 +420,15 @@ export default function HomePage() {
         onConfirm={handleUnmatch}
       />
 
+      <AgeFilterModal
+        show={showAgeFilter}
+        isDay={isDay}
+        minAge={minAge}
+        maxAge={maxAge}
+        onClose={() => setShowAgeFilter(false)}
+        onApply={handleApplyAgeFilter}
+      />
+
       <BackgroundOrbs isDay={isDay} />
 
       <Header
@@ -341,13 +445,15 @@ export default function HomePage() {
           matchesCount={matches.length}
           unreadCount={unreadCount}
           onTabChange={handleTabChange}
+          onOpenFilter={() => setShowAgeFilter(true)}
+          hasAgeFilter={minAge !== 18 || maxAge !== 100}
         />
 
         {activeTab === "discover" && (
           <DiscoverTab
             isDay={isDay}
             loading={loading}
-            users={users}
+            users={filteredUsers}
             currentIndex={currentIndex}
             swipeDirection={swipeDirection}
             onSwipe={handleSwipe}
