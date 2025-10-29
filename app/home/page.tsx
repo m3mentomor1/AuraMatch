@@ -519,7 +519,7 @@ export default function HomePage() {
                 className="relative group"
               >
                 <img
-                  src={`${API_URL}${currentUser.profilePicture}`}
+                  src={currentUser.profilePicture}
                   alt={currentUser.firstName}
                   className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover border-2 border-purple-500 hover:border-purple-400 transition-all cursor-pointer"
                 />

@@ -274,7 +274,7 @@ export default function ProfilePage() {
             <div className="flex justify-center mb-8">
               <div className="relative">
                 <img
-                  src={previewUrl || `${API_URL}${currentUser.profilePicture}`}
+                  src={previewUrl || `${currentUser.profilePicture}`}
                   alt={currentUser.firstName}
                   className="w-32 h-32 rounded-full object-cover border-4 border-purple-500"
                 />
