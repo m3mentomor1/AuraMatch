@@ -2,6 +2,10 @@
   <h1>AuraMatch ---> Frontend</h1>
 </div>
 
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/28326939-cc78-4005-be8a-55f041c96262" alt="Logo">
+</div><br>
+
 **AuraMatch** is a modern, responsive dating app built with Next.js, TypeScript, and Tailwind CSS.
 
 ## Table of Contents
