@@ -14,6 +14,9 @@ const messagingRoutes = require("./src/Messaging-Chat/routes");
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// ✅ Fix proxy / rate limit issues on Render
+app.set("trust proxy", 1);
+
 // Security middleware
 app.use(helmet());
 
@@ -27,20 +30,18 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 
-// Rate limiting
+// ✅ Generic API rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
+  max: 200, // increased from 100 to reduce false blocking
   message: "Too many requests from this IP, please try again later.",
 });
-
-// Apply rate limiting to API routes
 app.use("/api/", limiter);
 
-// Stricter rate limit for auth routes
+// ✅ Auth-specific rate limiter (less strict now)
 const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 5,
+  windowMs: 5 * 60 * 1000, // 5 minutes
+  max: 100, // increased from 5
   message: "Too many authentication attempts, please try again later.",
 });
 app.use("/api/auth/signin", authLimiter);
@@ -50,7 +51,7 @@ app.use("/api/auth/signup", authLimiter);
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
-// Request logging in development
+// Request logging (dev only)
 if (process.env.NODE_ENV !== "production") {
   app.use((req, res, next) => {
     console.log(`${req.method} ${req.path}`);
@@ -58,13 +59,13 @@ if (process.env.NODE_ENV !== "production") {
   });
 }
 
-// Mount routes
+// ✅ Mount routes
 app.use("/api/auth", authRoutes);
 app.use("/api", profileRoutes);
 app.use("/api", matchingRoutes);
 app.use("/api", messagingRoutes);
 
-// Health check
+// ✅ Health check
 app.get("/health", (req, res) => {
   res.json({
     status: "OK",
@@ -73,7 +74,7 @@ app.get("/health", (req, res) => {
   });
 });
 
-// Root endpoint
+// ✅ Root endpoint
 app.get("/", (req, res) => {
   res.json({
     message: "AuraMatch API",
@@ -82,16 +83,15 @@ app.get("/", (req, res) => {
   });
 });
 
-// 404 handler
+// ✅ 404 handler
 app.use((req, res) => {
   res.status(404).json({ error: "Route not found" });
 });
 
-// Error handling middleware
+// ✅ Error handling middleware
 app.use((err, req, res, next) => {
   console.error("Error:", err);
 
-  // Don't leak error details in production
   const errorMessage =
     process.env.NODE_ENV === "production"
       ? "Internal server error"
@@ -102,17 +102,17 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Graceful shutdown
+// ✅ Graceful shutdown
 process.on("SIGTERM", () => {
   console.log("SIGTERM received, shutting down gracefully...");
   process.exit(0);
 });
-
 process.on("SIGINT", () => {
   console.log("SIGINT received, shutting down gracefully...");
   process.exit(0);
 });
 
+// ✅ Start server
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`Server running on port ${PORT}`);
   console.log(`Environment: ${process.env.NODE_ENV || "development"}`);
