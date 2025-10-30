@@ -1,6 +1,4 @@
-// ============================================
-// FILE: frontend/app/home/components/MatchPopup.tsx
-// ============================================
+// \frontend\components\home\MatchPopup.tsx
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";

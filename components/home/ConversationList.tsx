@@ -4,7 +4,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Match } from "@/app/types";
+import { Match } from "@/components/home/types";
 
 interface ConversationListProps {
   isDay: boolean;

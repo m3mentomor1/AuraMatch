@@ -1,6 +1,4 @@
-// ============================================
-// FILE: frontend/app/home/components/AgeFilterModal.tsx
-// ============================================
+// \frontend\components\home\AgeFilterModal.tsx
 "use client";
 
 import { useState, useEffect } from "react";

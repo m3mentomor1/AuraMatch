@@ -1,18 +1,17 @@
-// ============================================
-// FILE: frontend/app/profile/components/ProfileForm.tsx
-// ============================================
+// frontend/components/profile/ProfileForm.tsx
 "use client";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { X, Save, Loader2 } from "lucide-react";
+import { X, Save, Loader2, ChevronDown } from "lucide-react";
 
 interface ProfileFormData {
   firstName: string;
   lastName: string;
   age: string;
   bio: string;
+  gender: string;
 }
 
 interface ProfileFormProps {
@@ -22,7 +21,9 @@ interface ProfileFormProps {
   formData: ProfileFormData;
   currentEmail: string;
   onInputChange: (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
   ) => void;
   onSave: () => void;
   onCancel: () => void;
@@ -130,6 +131,70 @@ export default function ProfileForm({
                 : "bg-white/5 border-purple-500/30 text-white"
             } ${!isEditing && "opacity-60"}`}
           />
+        </div>
+
+        {/* Gender */}
+        <div>
+          <label
+            className={`block mb-2 text-sm font-medium ${
+              isDay ? "text-gray-700" : "text-gray-200"
+            }`}
+          >
+            Gender
+          </label>
+          <div className="relative">
+            <select
+              name="gender"
+              value={formData.gender}
+              onChange={onInputChange}
+              disabled={!isEditing}
+              className={`w-full h-12 px-3 pr-10 rounded-md border transition-colors appearance-none ${
+                isDay
+                  ? "bg-white border-purple-200 text-gray-900"
+                  : "bg-white/5 border-purple-500/30 text-white"
+              } ${
+                !isEditing && "opacity-60"
+              } focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:cursor-not-allowed`}
+            >
+              <option
+                value=""
+                className={
+                  isDay ? "bg-white text-gray-900" : "bg-gray-900 text-white"
+                }
+              >
+                Select gender
+              </option>
+              <option
+                value="male"
+                className={
+                  isDay ? "bg-white text-gray-900" : "bg-gray-900 text-white"
+                }
+              >
+                Male
+              </option>
+              <option
+                value="female"
+                className={
+                  isDay ? "bg-white text-gray-900" : "bg-gray-900 text-white"
+                }
+              >
+                Female
+              </option>
+              <option
+                value="other"
+                className={
+                  isDay ? "bg-white text-gray-900" : "bg-gray-900 text-white"
+                }
+              >
+                Other
+              </option>
+            </select>
+            <ChevronDown
+              className={`absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 pointer-events-none ${
+                isDay ? "text-purple-600" : "text-purple-400"
+              } ${!isEditing && "opacity-60"}`}
+            />
+          </div>
         </div>
 
         {/* Email (Read-only) */}

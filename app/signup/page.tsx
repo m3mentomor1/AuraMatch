@@ -1,14 +1,12 @@
-// ============================================
-// FILE: frontend/app/signup/page.tsx
-// ============================================
+// frontend/app/signup/page.tsx
 "use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import AuthHeader from "../components/AuthHeader";
-import BackgroundOrbs from "../home/components/BackgroundOrbs";
-import AuthContainer from "../components/AuthContainer";
-import SignUpForm from "./components/SignUpForm";
+import AuthHeader from "../../components/auth-components/AuthHeader";
+import BackgroundOrbs from "../../components/home/BackgroundOrbs";
+import AuthContainer from "../../components/auth-components/AuthContainer";
+import SignUpForm from "../../components/signup/SignUpForm";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
@@ -24,13 +22,16 @@ export default function SignUpPage() {
     lastName: "",
     age: "",
     bio: "",
+    gender: "",
   });
   const [profilePicture, setProfilePicture] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string>("");
   const [error, setError] = useState<string>("");
 
   const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
   ) => {
     setFormData({
       ...formData,
@@ -55,6 +56,11 @@ export default function SignUpPage() {
       return;
     }
 
+    if (!formData.gender) {
+      setError("⚠️ Please select your gender.");
+      return;
+    }
+
     setError("");
     setLoading(true);
 
@@ -66,6 +72,7 @@ export default function SignUpPage() {
       formDataToSend.append("lastName", formData.lastName);
       formDataToSend.append("age", formData.age);
       formDataToSend.append("bio", formData.bio);
+      formDataToSend.append("gender", formData.gender);
       formDataToSend.append("profilePicture", profilePicture);
 
       const response = await fetch(`${API_URL}/api/auth/signup`, {

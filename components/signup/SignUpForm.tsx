@@ -1,12 +1,10 @@
-// ============================================
-// FILE: frontend/app/signup/components/SignUpForm.tsx
-// ============================================
+// \frontend\components\signup\SignUpForm.tsx
 "use client";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Upload, Eye, EyeOff, Loader2 } from "lucide-react";
+import { Upload, Eye, EyeOff, Loader2, ChevronDown } from "lucide-react";
 import Link from "next/link";
 
 interface SignUpFormData {
@@ -17,6 +15,7 @@ interface SignUpFormData {
   lastName: string;
   age: string;
   bio: string;
+  gender: string;
 }
 
 interface SignUpFormProps {
@@ -169,31 +168,98 @@ export default function SignUpForm({
           </div>
         </div>
 
-        {/* Age */}
-        <div>
-          <label
-            className={`block mb-2 text-sm font-medium ${
-              isDay ? "text-gray-700" : "text-gray-200"
-            }`}
-          >
-            Age <span className="text-pink-500">*</span>
-          </label>
-          <Input
-            type="number"
-            name="age"
-            value={formData.age}
-            onChange={onInputChange}
-            placeholder="25"
-            required
-            min="18"
-            max="100"
-            disabled={loading}
-            className={`w-full h-12 ${
-              isDay
-                ? "bg-white border-purple-200"
-                : "bg-white/5 border-purple-500/30 text-white placeholder:text-gray-400"
-            }`}
-          />
+        {/* Age and Gender */}
+        <div className="grid md:grid-cols-2 gap-6">
+          <div>
+            <label
+              className={`block mb-2 text-sm font-medium ${
+                isDay ? "text-gray-700" : "text-gray-200"
+              }`}
+            >
+              Age <span className="text-pink-500">*</span>
+            </label>
+            <Input
+              type="number"
+              name="age"
+              value={formData.age}
+              onChange={onInputChange}
+              placeholder="25"
+              required
+              min="18"
+              max="100"
+              disabled={loading}
+              className={`w-full h-12 ${
+                isDay
+                  ? "bg-white border-purple-200"
+                  : "bg-white/5 border-purple-500/30 text-white placeholder:text-gray-400"
+              }`}
+            />
+          </div>
+
+          <div>
+            <label
+              className={`block mb-2 text-sm font-medium ${
+                isDay ? "text-gray-700" : "text-gray-200"
+              }`}
+            >
+              Gender <span className="text-pink-500">*</span>
+            </label>
+            <div className="relative">
+              <select
+                name="gender"
+                value={formData.gender}
+                onChange={onInputChange as any}
+                required
+                disabled={loading}
+                className={`w-full h-12 px-3 pr-10 rounded-md border transition-colors appearance-none ${
+                  isDay
+                    ? "bg-white border-purple-200 text-gray-900"
+                    : "bg-white/5 border-purple-500/30 text-white"
+                } focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed`}
+                style={{
+                  backgroundImage: "none",
+                }}
+              >
+                <option
+                  value=""
+                  className={
+                    isDay ? "bg-white text-gray-900" : "bg-gray-900 text-white"
+                  }
+                >
+                  Select gender
+                </option>
+                <option
+                  value="male"
+                  className={
+                    isDay ? "bg-white text-gray-900" : "bg-gray-900 text-white"
+                  }
+                >
+                  Male
+                </option>
+                <option
+                  value="female"
+                  className={
+                    isDay ? "bg-white text-gray-900" : "bg-gray-900 text-white"
+                  }
+                >
+                  Female
+                </option>
+                <option
+                  value="other"
+                  className={
+                    isDay ? "bg-white text-gray-900" : "bg-gray-900 text-white"
+                  }
+                >
+                  Other
+                </option>
+              </select>
+              <ChevronDown
+                className={`absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 pointer-events-none ${
+                  isDay ? "text-purple-600" : "text-purple-400"
+                }`}
+              />
+            </div>
+          </div>
         </div>
 
         {/* Bio */}

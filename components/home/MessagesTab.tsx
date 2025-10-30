@@ -1,13 +1,11 @@
-// ============================================
-// FILE: frontend/app/home/components/MessagesTab.tsx
-// ============================================
+// \frontend\components\home\MessagesTab.tsx
 "use client";
 
 import { Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ConversationList from "./ConversationList";
 import ChatView from "./ChatView";
-import { Match, Message } from "@/app/types";
+import { Match, Message } from "@/components/home/types";
 
 interface MessagesTabProps {
   isDay: boolean;

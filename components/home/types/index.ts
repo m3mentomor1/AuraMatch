@@ -1,15 +1,17 @@
-// ============================================
-// FILE: frontend/app/types/index.ts
-// ============================================
+// frontend/components/home/types/index.ts
 
 export interface User {
   id: number;
   firstName: string;
   lastName: string | null;
   age: number;
+  gender: string;
   bio: string | null;
   profilePicture: string;
   email?: string;
+  distance?: number | null;
+  locationCity?: string;
+  locationCountry?: string;
 }
 
 export interface Match {
@@ -17,6 +19,7 @@ export interface Match {
   firstName: string;
   lastName: string | null;
   age: number;
+  gender: string;
   bio: string | null;
   profilePicture: string;
   matchId: number;

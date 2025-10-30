@@ -1,6 +1,4 @@
-// ============================================
-// FILE: frontend/app/profile/components/ProfileHeader.tsx
-// ============================================
+// \frontend\components\profile\ProfileHeader.tsx
 "use client";
 
 import { Sparkles, Moon, Sun } from "lucide-react";

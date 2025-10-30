@@ -1,14 +1,12 @@
-// ============================================
-// FILE: frontend/app/signin/page.tsx
-// ============================================
+//\frontend\app\signin\page.tsx
 "use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import AuthHeader from "../components/AuthHeader";
-import BackgroundOrbs from "../home/components/BackgroundOrbs";
-import AuthContainer from "../components/AuthContainer";
-import SignInForm from "./components/SignInForm";
+import AuthHeader from "../../components/auth-components/AuthHeader";
+import BackgroundOrbs from "../../components/home/BackgroundOrbs";
+import AuthContainer from "../../components/auth-components/AuthContainer";
+import SignInForm from "../../components/signin/SignInForm";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 

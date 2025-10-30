@@ -1,12 +1,10 @@
-// ============================================
-// FILE: frontend/app/home/components/DiscoverTab.tsx
-// ============================================
+// \frontend\components\home\DiscoverTab.tsx
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Sparkles, Heart, X } from "lucide-react";
-import { User } from "@/app/types";
+import { Sparkles, Heart, X, MapPin } from "lucide-react";
+import { User } from "@/components/home/types";
 
 interface DiscoverTabProps {
   isDay: boolean;
@@ -148,12 +146,31 @@ export default function DiscoverTab({
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
 
+            {/* Distance Badge */}
+            {currentCard.distance !== null &&
+              currentCard.distance !== undefined && (
+                <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-lg">
+                  <MapPin className="w-4 h-4 text-blue-600" />
+                  <span className="text-sm font-semibold text-gray-900">
+                    {currentCard.distance} km away
+                  </span>
+                </div>
+              )}
+
             <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
               <h2 className="text-3xl sm:text-4xl font-bold mb-1">
                 {currentCard.firstName}
                 {currentCard.lastName && ` ${currentCard.lastName}`},{" "}
                 {currentCard.age}
               </h2>
+              {currentCard.locationCity && (
+                <p className="text-sm text-gray-200 mb-2 flex items-center gap-1">
+                  <MapPin className="w-4 h-4" />
+                  {currentCard.locationCity}
+                  {currentCard.locationCountry &&
+                    `, ${currentCard.locationCountry}`}
+                </p>
+              )}
               {currentCard.bio && (
                 <p className="text-sm sm:text-base text-gray-200 line-clamp-2">
                   {currentCard.bio}

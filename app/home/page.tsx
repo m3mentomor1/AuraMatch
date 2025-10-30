@@ -1,21 +1,23 @@
-// ============================================
-// FILE: frontend/app/home/page.tsx
-// ============================================
+// frontend/app/home/page.tsx
 "use client";
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { notificationService } from "@/lib/notifications";
-import Header from "./components/Header";
-import BackgroundOrbs from "./components/BackgroundOrbs";
-import TabNavigation from "./components/TabNavigation";
-import DiscoverTab from "./components/DiscoverTab";
-import MatchesTab from "./components/MatchesTab";
-import MessagesTab from "./components/MessagesTab";
-import MatchPopup from "./components/MatchPopup";
-import UnmatchDialog from "./components/UnmatchDialog";
-import AgeFilterModal from "./components/AgeFilterModal";
-import { User, Match, Message } from "@/app/types";
+import { locationService, LocationData } from "@/lib/locationService";
+import Header from "../../components/home/Header";
+import BackgroundOrbs from "../../components/home/BackgroundOrbs";
+import TabNavigation from "../../components/home/TabNavigation";
+import DiscoverTab from "../../components/home/DiscoverTab";
+import MatchesTab from "../../components/home/MatchesTab";
+import MessagesTab from "../../components/home/MessagesTab";
+import MatchPopup from "../../components/home/MatchPopup";
+import UnmatchDialog from "../../components/home/UnmatchDialog";
+import AgeFilterModal from "../../components/home/AgeFilterModal";
+import DistanceFilterModal from "../../components/home/DistanceFilterModal";
+import GenderFilterModal from "../../components/home/GenderFilterModal";
+import LocationPickerModal from "../../components/home/LocationPickerModal";
+import { User, Match, Message } from "@/components/home/types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
@@ -24,7 +26,6 @@ export default function HomePage() {
   const [isDay, setIsDay] = useState(false);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [users, setUsers] = useState<User[]>([]);
-  const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<
@@ -46,8 +47,18 @@ export default function HomePage() {
   );
   const [previousUnreadCount, setPreviousUnreadCount] = useState<number>(0);
   const [showAgeFilter, setShowAgeFilter] = useState(false);
+  const [showDistanceFilter, setShowDistanceFilter] = useState(false);
+  const [showGenderFilter, setShowGenderFilter] = useState(false);
+  const [showLocationPicker, setShowLocationPicker] = useState(false);
   const [minAge, setMinAge] = useState(18);
   const [maxAge, setMaxAge] = useState(100);
+  const [maxDistance, setMaxDistance] = useState(500);
+  const [selectedGenders, setSelectedGenders] = useState<string[]>([
+    "male",
+    "female",
+    "other",
+  ]);
+  const [hasLocation, setHasLocation] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -62,29 +73,32 @@ export default function HomePage() {
     const user = JSON.parse(userData);
     setCurrentUser(user);
 
-    // Load saved age filter preferences
+    // Load saved filter preferences
     const savedMinAge = localStorage.getItem("minAge");
     const savedMaxAge = localStorage.getItem("maxAge");
+    const savedMaxDistance = localStorage.getItem("maxDistance");
+    const savedGenders = localStorage.getItem("selectedGenders");
+
     if (savedMinAge) setMinAge(parseInt(savedMinAge));
     if (savedMaxAge) setMaxAge(parseInt(savedMaxAge));
+    if (savedMaxDistance) setMaxDistance(parseInt(savedMaxDistance));
+    if (savedGenders) {
+      try {
+        setSelectedGenders(JSON.parse(savedGenders));
+      } catch (e) {
+        console.error("Error parsing saved genders:", e);
+      }
+    }
 
     notificationService.requestPermission().then((granted) => {
       console.log("Notification permission:", granted ? "granted" : "denied");
     });
 
-    fetchUsers(token);
+    checkUserLocation(token);
+    fetchUsers(token, savedMinAge, savedMaxAge, savedMaxDistance, savedGenders);
     fetchMatches(token);
     fetchUnreadCount(token);
   }, []);
-
-  useEffect(() => {
-    // Filter users based on age range
-    const filtered = users.filter(
-      (user) => user.age >= minAge && user.age <= maxAge
-    );
-    setFilteredUsers(filtered);
-    setCurrentIndex(0);
-  }, [users, minAge, maxAge]);
 
   useEffect(() => {
     if (selectedMatch && activeTab === "messages") {
@@ -116,14 +130,56 @@ export default function HomePage() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  const fetchUsers = async (token: string) => {
+  const checkUserLocation = async (token: string) => {
+    const hasLoc = await locationService.hasLocation(token);
+    setHasLocation(hasLoc);
+  };
+
+  const handleLocationSet = async (location: LocationData) => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    const success = await locationService.saveLocation(token, location);
+    if (success) {
+      setHasLocation(true);
+      setShowLocationPicker(false);
+      fetchUsers(
+        token,
+        minAge.toString(),
+        maxAge.toString(),
+        maxDistance.toString(),
+        JSON.stringify(selectedGenders)
+      );
+    } else {
+      alert("Failed to save location. Please try again.");
+    }
+  };
+
+  const fetchUsers = async (
+    token: string,
+    min?: string | null,
+    max?: string | null,
+    distance?: string | null,
+    genders?: string | null
+  ) => {
     try {
-      const response = await fetch(`${API_URL}/api/users`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const minAgeParam = min || minAge;
+      const maxAgeParam = max || maxAge;
+      const maxDistanceParam = distance || maxDistance;
+      const gendersParam = genders ? JSON.parse(genders) : selectedGenders;
+
+      const genderQuery = gendersParam.join(",");
+
+      const response = await fetch(
+        `${API_URL}/api/users?minAge=${minAgeParam}&maxAge=${maxAgeParam}&maxDistance=${maxDistanceParam}&genders=${genderQuery}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       if (!response.ok) throw new Error("Failed to fetch users");
       const data = await response.json();
       setUsers(data);
+      setCurrentIndex(0);
     } catch (error) {
       console.error("Error fetching users:", error);
     } finally {
@@ -269,7 +325,7 @@ export default function HomePage() {
 
   const handleSwipe = async (direction: "left" | "right") => {
     const token = localStorage.getItem("token");
-    const currentCard = filteredUsers[currentIndex];
+    const currentCard = users[currentIndex];
     if (!currentCard) return;
 
     setSwipeDirection(direction);
@@ -381,6 +437,56 @@ export default function HomePage() {
     localStorage.setItem("minAge", min.toString());
     localStorage.setItem("maxAge", max.toString());
     setShowAgeFilter(false);
+
+    const token = localStorage.getItem("token");
+    if (token) {
+      fetchUsers(
+        token,
+        min.toString(),
+        max.toString(),
+        maxDistance.toString(),
+        JSON.stringify(selectedGenders)
+      );
+    }
+  };
+
+  const handleApplyDistanceFilter = (distance: number) => {
+    setMaxDistance(distance);
+    localStorage.setItem("maxDistance", distance.toString());
+    setShowDistanceFilter(false);
+
+    const token = localStorage.getItem("token");
+    if (token) {
+      fetchUsers(
+        token,
+        minAge.toString(),
+        maxAge.toString(),
+        distance.toString(),
+        JSON.stringify(selectedGenders)
+      );
+    }
+  };
+
+  const handleApplyGenderFilter = (genders: string[]) => {
+    setSelectedGenders(genders);
+    localStorage.setItem("selectedGenders", JSON.stringify(genders));
+    setShowGenderFilter(false);
+
+    const token = localStorage.getItem("token");
+    if (token) {
+      fetchUsers(
+        token,
+        minAge.toString(),
+        maxAge.toString(),
+        maxDistance.toString(),
+        JSON.stringify(genders)
+      );
+    }
+  };
+
+  const handleRequestLocation = () => {
+    setShowDistanceFilter(false);
+    setShowLocationPicker(true);
   };
 
   const handleLogout = () => {
@@ -429,6 +535,31 @@ export default function HomePage() {
         onApply={handleApplyAgeFilter}
       />
 
+      <DistanceFilterModal
+        show={showDistanceFilter}
+        isDay={isDay}
+        maxDistance={maxDistance}
+        hasLocation={hasLocation}
+        onClose={() => setShowDistanceFilter(false)}
+        onApply={handleApplyDistanceFilter}
+        onRequestLocation={handleRequestLocation}
+      />
+
+      <GenderFilterModal
+        show={showGenderFilter}
+        isDay={isDay}
+        selectedGenders={selectedGenders}
+        onClose={() => setShowGenderFilter(false)}
+        onApply={handleApplyGenderFilter}
+      />
+
+      <LocationPickerModal
+        show={showLocationPicker}
+        isDay={isDay}
+        onClose={() => setShowLocationPicker(false)}
+        onLocationSet={handleLocationSet}
+      />
+
       <BackgroundOrbs isDay={isDay} />
 
       <Header
@@ -445,15 +576,19 @@ export default function HomePage() {
           matchesCount={matches.length}
           unreadCount={unreadCount}
           onTabChange={handleTabChange}
-          onOpenFilter={() => setShowAgeFilter(true)}
+          onOpenAgeFilter={() => setShowAgeFilter(true)}
+          onOpenDistanceFilter={() => setShowDistanceFilter(true)}
+          onOpenGenderFilter={() => setShowGenderFilter(true)}
           hasAgeFilter={minAge !== 18 || maxAge !== 100}
+          hasDistanceFilter={maxDistance !== 500}
+          hasGenderFilter={selectedGenders.length !== 3}
         />
 
         {activeTab === "discover" && (
           <DiscoverTab
             isDay={isDay}
             loading={loading}
-            users={filteredUsers}
+            users={users}
             currentIndex={currentIndex}
             swipeDirection={swipeDirection}
             onSwipe={handleSwipe}

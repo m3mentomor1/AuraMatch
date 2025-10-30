@@ -1,6 +1,4 @@
-// ============================================
-// FILE: frontend/app/signin/components/SignInForm.tsx
-// ============================================
+// \frontend\components\signin\SignInForm.tsx
 "use client";
 
 import { Button } from "@/components/ui/button";

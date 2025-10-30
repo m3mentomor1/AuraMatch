@@ -1,6 +1,4 @@
-// ============================================
-// FILE: frontend/app/profile/components/ProfilePicture.tsx
-// ============================================
+// \frontend\components\profile\ProfilePicture.tsx
 "use client";
 
 import { Camera } from "lucide-react";

@@ -1,12 +1,10 @@
-// ============================================
-// FILE: frontend/app/home/components/ChatView.tsx
-// ============================================
+// \frontend\components\home\ChatView.tsx
 "use client";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ArrowLeft, UserX, Send } from "lucide-react";
-import { Match, Message } from "@/app/types";
+import { Match, Message } from "@/components/home/types";
 
 interface ChatViewProps {
   isDay: boolean;

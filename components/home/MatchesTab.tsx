@@ -1,11 +1,9 @@
-// ============================================
-// FILE: frontend/app/home/components/MatchesTab.tsx
-// ============================================
+// \frontend\components\home\MatchesTab.tsx
 "use client";
 
 import { motion } from "framer-motion";
 import { Users, X } from "lucide-react";
-import { Match } from "@/app/types";
+import { Match } from "@/components/home/types";
 
 interface MatchesTabProps {
   isDay: boolean;

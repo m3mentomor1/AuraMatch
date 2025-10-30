@@ -1,6 +1,4 @@
-// ============================================
-// FILE: frontend/app/profile/page.tsx
-// ============================================
+// frontend/app/profile/page.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -8,10 +6,10 @@ import { motion } from "framer-motion";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import ProfileHeader from "./components/ProfileHeader";
-import BackgroundOrbs from "../home/components/BackgroundOrbs";
-import ProfilePicture from "./components/ProfilePicture";
-import ProfileForm from "./components/ProfileForm";
+import ProfileHeader from "../../components/profile/ProfileHeader";
+import BackgroundOrbs from "../../components/home/BackgroundOrbs";
+import ProfilePicture from "../../components/profile/ProfilePicture";
+import ProfileForm from "../../components/profile/ProfileForm";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
@@ -30,6 +28,7 @@ export default function ProfilePage() {
     lastName: "",
     age: "",
     bio: "",
+    gender: "",
   });
 
   const [newProfilePicture, setNewProfilePicture] = useState<File | null>(null);
@@ -51,12 +50,15 @@ export default function ProfilePage() {
       lastName: user.lastName || "",
       age: user.age.toString(),
       bio: user.bio || "",
+      gender: user.gender || "",
     });
     setLoading(false);
   }, []);
 
   const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
   ) => {
     setFormData({
       ...formData,
@@ -86,6 +88,7 @@ export default function ProfilePage() {
       formDataToSend.append("lastName", formData.lastName);
       formDataToSend.append("age", formData.age);
       formDataToSend.append("bio", formData.bio);
+      formDataToSend.append("gender", formData.gender);
 
       if (newProfilePicture) {
         formDataToSend.append("profilePicture", newProfilePicture);
@@ -127,6 +130,7 @@ export default function ProfilePage() {
       lastName: currentUser.lastName || "",
       age: currentUser.age.toString(),
       bio: currentUser.bio || "",
+      gender: currentUser.gender || "",
     });
     setNewProfilePicture(null);
     setPreviewUrl("");
