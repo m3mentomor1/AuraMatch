@@ -42,11 +42,11 @@ A modern, responsive dating application frontend built with Next.js 15, React, T
 
 ## Tech Stack
 
-- **Framework**: [Next.js 15](https://nextjs.org/) (App Router)
+- **Framework/s**: [Next.js](https://nextjs.org/), [React](https://react.dev/)
 - **Language**: [TypeScript](https://www.typescriptlang.org/)
 - **Styling**: [Tailwind CSS](https://tailwindcss.com/)
 - **Animations**: [Framer Motion](https://www.framer.com/motion/)
-- **UI Components**: [Radix UI](https://www.radix-ui.com/)
+- **UI Components**: [shadcn/ui](https://ui.shadcn.com/)
 - **Icons**: [Lucide React](https://lucide.dev/)
 - **HTTP Client**: Native Fetch API
 - **State Management**: React Hooks (useState, useEffect)
