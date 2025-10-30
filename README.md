@@ -32,13 +32,24 @@
 ## Features
 
 - 🌓 **Day/Night Theme**: Toggle between light and dark modes
+  ![day-night-theme](https://github.com/user-attachments/assets/54fb116a-5d6e-4802-b406-876ce000f8f2)
+
 - 📱 **Fully Responsive**: Works seamlessly on mobile, tablet, and desktop
+  ![responsiveness](https://github.com/user-attachments/assets/56ca8067-d6df-4323-a203-cbae8fca4065)
+
 - 🔐 **Authentication**: Secure sign up and sign in
+  ![sign-in](https://github.com/user-attachments/assets/cbde6750-328a-4fdd-bea0-5aef759c029e)
+
+  ![sign-up](https://github.com/user-attachments/assets/14613ed4-ea1c-493d-8570-73fbe257a8a0)
+
 - 👤 **Profile Management**: Update user profile information and pictures
+  ![profile-management](https://github.com/user-attachments/assets/ca492084-0af8-4fa3-a59f-504e2448cda4)
+
 - 💫 **User Discovery and Matching**: Match other users with swipeable cards
+  ![user-discovery-and-matching](https://github.com/user-attachments/assets/58e7e3a4-a43f-4f87-a3a6-e4056657c8dd)
+
 - ✅ **Match List**: View all users you currently matched with
 - 🔍 **Advanced Filters**: Filter by age, distance, and gender
-- 📍 **Location-based Matching**: Find matches near you with distance calculation
 - 💬 **Real-time Messaging**: Chat with your matches
 - 🔔 **Browser-based Push Notifications**: Get notified of new matches and messages
 
