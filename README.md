@@ -1,6 +1,8 @@
-# AuraMatch Frontend Documentation
+<div align="center">
+  <h1>AuraMatch ---> Frontend</h1>
+</div>
 
-A modern, responsive dating application frontend built with Next.js 15, React, TypeScript, and Tailwind CSS.
+**AuraMatch** is a modern, responsive dating app built with Next.js, TypeScript, and Tailwind CSS.
 
 ## Table of Contents
 
@@ -25,18 +27,16 @@ A modern, responsive dating application frontend built with Next.js 15, React, T
 
 ## Features
 
-- 🎨 **Modern UI/UX**: Beautiful gradient designs with glassmorphism effects
 - 🌓 **Day/Night Theme**: Toggle between light and dark modes
 - 📱 **Fully Responsive**: Works seamlessly on mobile, tablet, and desktop
-- 🔐 **Authentication**: Secure sign up and sign in with JWT
-- 👤 **Profile Management**: Update profile information and pictures
-- 💫 **User Discovery**: Swipeable card interface for browsing profiles
+- 🔐 **Authentication**: Secure sign up and sign in
+- 👤 **Profile Management**: Update user profile information and pictures
+- 💫 **User Discovery and Matching**: Match other users with swipeable cards
+- ✅ **Match List**: View all users you currently matched with
 - 🔍 **Advanced Filters**: Filter by age, distance, and gender
 - 📍 **Location-based Matching**: Find matches near you with distance calculation
 - 💬 **Real-time Messaging**: Chat with your matches
-- 🔔 **Browser Notifications**: Get notified of new matches and messages
-- ✨ **Smooth Animations**: Powered by Framer Motion
-- 🎯 **Type-safe**: Built with TypeScript for better developer experience
+- 🔔 **Browser-based Push Notifications**: Get notified of new matches and messages
 
 ---
 
