@@ -48,6 +48,7 @@
 - 💫 **User Discovery and Matching**: Match other users with swipeable cards
   ![user-discovery-and-matching](https://github.com/user-attachments/assets/58e7e3a4-a43f-4f87-a3a6-e4056657c8dd)
 
+Other Features:
 - ✅ **Match List**: View all users you currently matched with
 - 🔍 **Advanced Filters**: Filter by age, distance, and gender
 - 💬 **Real-time Messaging**: Chat with your matches
