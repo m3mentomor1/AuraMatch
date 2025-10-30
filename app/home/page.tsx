@@ -3,6 +3,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { io, Socket } from "socket.io-client";
 import { notificationService } from "@/lib/notifications";
 import { locationService, LocationData } from "@/lib/locationService";
 import Header from "../../components/home/Header";
@@ -19,7 +20,7 @@ import GenderFilterModal from "../../components/home/GenderFilterModal";
 import LocationPickerModal from "../../components/home/LocationPickerModal";
 import { User, Match, Message } from "@/components/home/types";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
 export default function HomePage() {
   const router = useRouter();
@@ -61,6 +62,111 @@ export default function HomePage() {
   const [hasLocation, setHasLocation] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  // socket ref (singleton for the component)
+  const socketRef = useRef<Socket | null>(null);
+
+  // Connect socket once (client-side only)
+  useEffect(() => {
+    const token =
+      typeof window !== "undefined" && localStorage.getItem("token");
+    // connect only if API_URL available
+    if (!API_URL) {
+      console.warn("NEXT_PUBLIC_API_URL not set — sockets disabled");
+      return;
+    }
+
+    // create socket with token auth if available
+    const socket = io(API_URL, {
+      autoConnect: true,
+      auth: token ? { token } : undefined,
+      transports: ["websocket", "polling"],
+    });
+
+    socketRef.current = socket;
+
+    // incoming chat message
+    socket.on("receive_message", (data: any) => {
+      try {
+        // Expect data: { room, message, senderId, senderName, senderPicture, createdAt }
+        const incoming: Message = {
+          id: data.id ?? Date.now(),
+          message: data.message,
+          senderId: data.senderId,
+          senderName: data.senderName || "",
+          senderPicture: data.senderPicture || "",
+          createdAt: data.createdAt || new Date().toISOString(),
+          read: false,
+        };
+
+        // If the message belongs to currently selected match, append to messages
+        if (selectedMatch && data.room === `match_${selectedMatch.matchId}`) {
+          setMessages((prev) => [...prev, incoming]);
+        } else {
+          // otherwise increment unread and refresh matches
+          setPreviousUnreadCount((prev) => prev + 1);
+          fetchMatches(token || "");
+        }
+
+        // show a browser notification
+        const senderName = incoming.senderName || "New message";
+        notificationService.showMessageNotification(
+          senderName,
+          incoming.message,
+          incoming.senderPicture || "/favicon.ico"
+        );
+      } catch (err) {
+        console.error("Error handling receive_message:", err);
+      }
+    });
+
+    // when new match occurs (server can emit 'new_match' with match payload)
+    socket.on("new_match", (matchData: any) => {
+      try {
+        // Refresh matches and show notification
+        const token = localStorage.getItem("token");
+        if (token) fetchMatches(token);
+        if (matchData && matchData.firstName) {
+          notificationService.showMatchNotification(
+            matchData.firstName,
+            matchData.profilePicture || "/favicon.ico"
+          );
+        }
+      } catch (err) {
+        console.error("Error handling new_match:", err);
+      }
+    });
+
+    socket.on("connect_error", (err) => {
+      console.warn("Socket connect_error:", err);
+    });
+
+    return () => {
+      socket.off("receive_message");
+      socket.off("new_match");
+      socket.disconnect();
+      socketRef.current = null;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // run once
+
+  // Keep selectedMatch socket room in sync
+  useEffect(() => {
+    const socket = socketRef.current;
+    if (!socket) return;
+
+    // leave previous rooms then join new room
+    const roomName = selectedMatch ? `match_${selectedMatch.matchId}` : null;
+    if (roomName) {
+      socket.emit("join_room", roomName);
+    }
+
+    return () => {
+      if (roomName) {
+        socket.emit("leave_room", roomName); // server might ignore if not implemented
+      }
+    };
+  }, [selectedMatch]);
+
   useEffect(() => {
     const token = localStorage.getItem("token");
     const userData = localStorage.getItem("user");
@@ -98,18 +204,22 @@ export default function HomePage() {
     fetchUsers(token, savedMinAge, savedMaxAge, savedMaxDistance, savedGenders);
     fetchMatches(token);
     fetchUnreadCount(token);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // previously polled fetchMessages when selectedMatch open; we keep one fetch immediately
   useEffect(() => {
     if (selectedMatch && activeTab === "messages") {
       fetchMessages(selectedMatch.matchId);
+      // keep occasional sync fallback (every 10s)
       const interval = setInterval(() => {
         fetchMessages(selectedMatch.matchId);
-      }, 2000);
+      }, 10000);
       return () => clearInterval(interval);
     }
   }, [selectedMatch, activeTab]);
 
+  // keep polling matches/unread as fallback but less frequently because sockets now handle real-time
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) return;
@@ -117,8 +227,7 @@ export default function HomePage() {
     const interval = setInterval(() => {
       checkForNewMatches(token);
       checkForNewMessages(token);
-    }, 3000);
-
+    }, 10000); // every 10s
     return () => clearInterval(interval);
   }, [previousMatchIds, previousUnreadCount]);
 
@@ -257,9 +366,7 @@ export default function HomePage() {
       );
 
       if (newMatches.length > 0) {
-        console.log("New matches detected:", newMatches.length);
         newMatches.forEach((match: Match) => {
-          console.log("Showing notification for match:", match.firstName);
           notificationService.showMatchNotification(
             match.firstName,
             match.profilePicture
@@ -285,13 +392,6 @@ export default function HomePage() {
       const newUnreadCount = data.unreadCount;
 
       if (newUnreadCount > previousUnreadCount) {
-        console.log(
-          "New messages detected, count increased from",
-          previousUnreadCount,
-          "to",
-          newUnreadCount
-        );
-
         const matchesResponse = await fetch(`${API_URL}/api/matches`, {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -304,7 +404,6 @@ export default function HomePage() {
 
           if (matchesWithUnread.length > 0) {
             const match = matchesWithUnread[0];
-            console.log("Showing message notification for:", match.firstName);
             notificationService.showMessageNotification(
               match.firstName,
               match.lastMessage || "New message",
@@ -348,7 +447,6 @@ export default function HomePage() {
       const data = await response.json();
 
       if (data.isMatch) {
-        console.log("Match detected! Showing popup and notification");
         setMatchedUser(currentCard);
         setShowMatchPopup(true);
 
@@ -357,10 +455,20 @@ export default function HomePage() {
           currentCard.profilePicture
         );
 
+        // Emit new_match via socket (backend may broadcast)
+        const socket = socketRef.current;
+        if (socket) {
+          socket.emit("match_made", {
+            userId: currentUser?.id,
+            matchedUserId: currentCard.id,
+            match: data.match || null,
+          });
+        }
+
         await fetchMatches(token!);
       }
 
-      setCurrentIndex(currentIndex + 1);
+      setCurrentIndex((i) => i + 1);
     } catch (error) {
       console.error("Error recording swipe:", error);
     } finally {
@@ -391,13 +499,53 @@ export default function HomePage() {
       );
 
       if (!response.ok) throw new Error("Failed to send message");
-      await fetchMessages(selectedMatch.matchId);
+      const saved = await response.json();
+
+      // optimistic UI + socket emit
+      const socket = socketRef.current;
+      const room = `match_${selectedMatch.matchId}`;
+
+      const payload = {
+        room,
+        message: saved.message || messageToSend,
+        senderId: saved.senderId || currentUser?.id,
+        senderName: currentUser?.firstName,
+        senderPicture: currentUser?.profilePicture,
+        createdAt: saved.createdAt || new Date().toISOString(),
+        id: saved.id || Date.now(),
+      };
+
+      // append locally
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: payload.id,
+          message: payload.message,
+          senderId: payload.senderId,
+          senderName: payload.senderName,
+          senderPicture: payload.senderPicture,
+          createdAt: payload.createdAt,
+          read: false,
+        },
+      ]);
+
+      // emit to room so other clients receive it
+      if (socket) {
+        socket.emit("new_message", payload);
+      }
+
+      // refresh unread/matches
+      if (token) {
+        fetchUnreadCount(token);
+        fetchMatches(token);
+      }
     } catch (error) {
       console.error("Error sending message:", error);
       setNewMessage(messageToSend);
       alert("Failed to send message. Please try again.");
     } finally {
       setSendingMessage(false);
+      scrollToBottom();
     }
   };
 
