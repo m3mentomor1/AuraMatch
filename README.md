@@ -59,26 +59,41 @@ Before you begin, ensure you have the following installed:
 ### 1. Clone the Repository
 
 ```bash
-git clone <your-repository-url>
-cd auramatch/backend
+# Clone the repository
+git clone https://github.com/m3mentomor1/AuraMatch.git
+cd AuraMatch
+
+# Switch to the backend branch
+git checkout backend
 ```
 
+**Note:** The backend code is in the `backend` branch, not `main`.
+
 ### 2. Install Dependencies
+
+**This step is required!** Install all project dependencies:
 
 ```bash
 npm install
 ```
 
-Required packages:
+This will install all packages listed in `package.json`:
 
-- express
-- pg (PostgreSQL client)
-- cors
-- dotenv
-- jsonwebtoken
-- bcryptjs
-- multer
-- @supabase/supabase-js
+- `express` - Web framework
+- `pg` - PostgreSQL client
+- `cors` - Cross-origin resource sharing
+- `dotenv` - Environment variables
+- `jsonwebtoken` - JWT authentication
+- `bcryptjs` - Password hashing
+- `multer` - File upload handling
+- `@supabase/supabase-js` - Supabase client
+
+If `package.json` doesn't exist, create it with:
+
+```bash
+npm init -y
+npm install express pg cors dotenv jsonwebtoken bcryptjs multer @supabase/supabase-js
+```
 
 ### 3. Supabase Storage Setup
 
