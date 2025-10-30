@@ -1,6 +1,4 @@
-// ============================================
-// FILE: frontend/app/home/components/Header.tsx
-// ============================================
+// \frontend\components\home\Header.tsx
 "use client";
 
 import { Moon, Sun, LogOut, Sparkles } from "lucide-react";

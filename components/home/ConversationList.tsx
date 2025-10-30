@@ -1,6 +1,4 @@
-// ============================================
-// FILE: frontend/app/home/components/ConversationList.tsx
-// ============================================
+// \frontend\components\home\ConversationList.tsx
 "use client";
 
 import { motion } from "framer-motion";

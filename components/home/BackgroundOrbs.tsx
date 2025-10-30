@@ -1,6 +1,4 @@
-// ============================================
-// FILE: frontend/app/home/components/BackgroundOrbs.tsx
-// ============================================
+// \frontend\components\home\BackgroundOrbs.tsx
 "use client";
 
 interface BackgroundOrbsProps {

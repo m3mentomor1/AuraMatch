@@ -19,7 +19,7 @@ import GenderFilterModal from "../../components/home/GenderFilterModal";
 import LocationPickerModal from "../../components/home/LocationPickerModal";
 import { User, Match, Message } from "@/components/home/types";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function HomePage() {
   const router = useRouter();

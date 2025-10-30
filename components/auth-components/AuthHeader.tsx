@@ -1,6 +1,4 @@
-// ============================================
-// FILE: frontend/app/components/AuthHeader.tsx
-// ============================================
+// \frontend\components\auth-components\AuthHeader.tsx
 "use client";
 
 import { Sparkles, Moon, Sun } from "lucide-react";

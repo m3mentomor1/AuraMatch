@@ -1,6 +1,4 @@
-// ============================================
-// FILE: frontend/app/components/AuthContainer.tsx
-// ============================================
+// \frontend\components\auth-components\AuthContainer.tsx
 "use client";
 
 import { motion } from "framer-motion";

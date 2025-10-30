@@ -8,7 +8,7 @@ import BackgroundOrbs from "../../components/home/BackgroundOrbs";
 import AuthContainer from "../../components/auth-components/AuthContainer";
 import SignInForm from "../../components/signin/SignInForm";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function SignInPage() {
   const router = useRouter();

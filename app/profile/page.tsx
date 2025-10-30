@@ -11,7 +11,7 @@ import BackgroundOrbs from "../../components/home/BackgroundOrbs";
 import ProfilePicture from "../../components/profile/ProfilePicture";
 import ProfileForm from "../../components/profile/ProfileForm";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function ProfilePage() {
   const router = useRouter();

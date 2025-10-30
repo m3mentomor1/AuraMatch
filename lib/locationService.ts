@@ -117,8 +117,7 @@ class LocationService {
     locationData: LocationData
   ): Promise<boolean> {
     try {
-      const API_URL =
-        process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+      const API_URL = process.env.NEXT_PUBLIC_API_URL;
       const response = await fetch(`${API_URL}/api/auth/location`, {
         method: "PUT",
         headers: {
@@ -149,8 +148,7 @@ class LocationService {
    */
   public async hasLocation(token: string): Promise<boolean> {
     try {
-      const API_URL =
-        process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+      const API_URL = process.env.NEXT_PUBLIC_API_URL;
       const response = await fetch(`${API_URL}/api/auth/location`, {
         headers: {
           Authorization: `Bearer ${token}`,
