@@ -5,7 +5,7 @@ const { createClient } = require("@supabase/supabase-js");
 
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_KEY;
-const SUPABASE_BUCKET = process.env.SUPABASE_BUCKET_NAME || "profile-pictures";
+const SUPABASE_BUCKET = process.env.SUPABASE_BUCKET_NAME;
 
 if (!supabaseUrl || !supabaseKey) {
   throw new Error("Missing Supabase environment variables");

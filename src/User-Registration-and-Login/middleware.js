@@ -3,8 +3,7 @@ const jwt = require("jsonwebtoken");
 const multer = require("multer");
 const path = require("path");
 
-const JWT_SECRET =
-  process.env.JWT_SECRET || "your-secret-key-change-in-production";
+const JWT_SECRET = process.env.JWT_SECRET;
 
 // Multer configuration
 const storage = multer.memoryStorage();

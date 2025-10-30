@@ -5,8 +5,7 @@ const pool = require("../../db");
 const { uploadToSupabase } = require("../../supabase");
 const { authenticateToken } = require("./middleware");
 
-const JWT_SECRET =
-  process.env.JWT_SECRET || "your-secret-key-change-in-production";
+const JWT_SECRET = process.env.JWT_SECRET;
 
 const signUp = async (req, res) => {
   try {

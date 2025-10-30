@@ -117,13 +117,16 @@ npm install express pg cors dotenv jsonwebtoken bcryptjs multer @supabase/supaba
 <img width="898" height="749" alt="ERD" src="https://github.com/user-attachments/assets/ad6bfffa-f24a-4b84-a006-919242ff9493" />
 
 The AuraMatch database consists of 4 main tables with the following relationships:
+
 1. Tables:
+
 - users: Stores user accounts and profile information
 - matches: Bidirectional records of matched users
 - swipes: Records of user swipe actions (like/pass)
 - messages: Chat messages between matched users
 
 2. Key Relationships:
+
 - One user can have many matches (one-to-many)
 - One user can have many swipes (one-to-many)
 - One match can have many messages (one-to-many)
@@ -726,29 +729,3 @@ PORT=3000
 - ⚠️ Implement refresh tokens for better security
 
 ---
-
-## Contributing
-
-1. Create a feature branch
-2. Make your changes
-3. Test thoroughly
-4. Submit a pull request
-
----
-
-## License
-
-[Your License Here]
-
----
-
-## Support
-
-For issues or questions:
-
-- Open an issue on GitHub
-- Contact: your-email@example.com
-
----
-
-**Happy Coding! 💙**
