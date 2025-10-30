@@ -112,6 +112,23 @@ npm install express pg cors dotenv jsonwebtoken bcryptjs multer @supabase/supaba
 
 ## Database Setup
 
+### Schema Overview
+
+<img width="898" height="749" alt="ERD" src="https://github.com/user-attachments/assets/ad6bfffa-f24a-4b84-a006-919242ff9493" />
+
+The AuraMatch database consists of 4 main tables with the following relationships:
+1. Tables:
+- users: Stores user accounts and profile information
+- matches: Bidirectional records of matched users
+- swipes: Records of user swipe actions (like/pass)
+- messages: Chat messages between matched users
+
+2. Key Relationships:
+- One user can have many matches (one-to-many)
+- One user can have many swipes (one-to-many)
+- One match can have many messages (one-to-many)
+- Matches are bidirectional (each match creates two records)
+
 ### 1. Create the Database
 
 Open your PostgreSQL client (psql, pgAdmin, or any SQL client):
