@@ -59,9 +59,3 @@ CREATE INDEX IF NOT EXISTS idx_matches_user_id ON matches(user_id);
 CREATE INDEX IF NOT EXISTS idx_swipes_user_id ON swipes(user_id);
 CREATE INDEX IF NOT EXISTS idx_messages_match_id ON messages(match_id);
 CREATE INDEX IF NOT EXISTS idx_users_location ON users(latitude, longitude);
-
--- Migration query to add gender column to existing database
--- Run this separately if you already have the database set up:
--- ALTER TABLE users ADD COLUMN IF NOT EXISTS gender VARCHAR(20);
--- UPDATE users SET gender = 'other' WHERE gender IS NULL;
--- ALTER TABLE users ALTER COLUMN gender SET NOT NULL;
