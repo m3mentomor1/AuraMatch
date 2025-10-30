@@ -1,20 +1,19 @@
-# Use official Node.js version matching development environment
 FROM node:22-alpine
 
-# Set working directory
 WORKDIR /app
 
-# Copy package files
+# Install system dependencies if needed (good for bcrypt, multer sharp, etc)
+RUN apk add --no-cache python3 make g++
+
+# Copy dependency files first so Docker can cache them
 COPY package*.json ./
 
 # Install dependencies
-RUN npm ci --only=production
+RUN npm ci --omit=dev
 
-# Copy application files
+# Copy the app
 COPY . .
 
-# Expose port
 EXPOSE 5000
 
-# Start the application
 CMD ["node", "server.js"]

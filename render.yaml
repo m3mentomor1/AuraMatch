@@ -1,33 +1,22 @@
 services:
   - type: web
     name: auramatch-backend
-    runtime: node
     plan: free
-    buildCommand: npm install
-    startCommand: npm start
+    dockerfilePath: ./Dockerfile
+    autoDeploy: true
     healthCheckPath: /health
     envVars:
       - key: NODE_ENV
         value: production
       - key: PORT
         value: 5000
-      - key: JWT_SECRET
-        generateValue: true
-      - key: DB_USER
+      - key: DATABASE_URL
         sync: false
-      - key: DB_HOST
-        sync: false
-      - key: DB_NAME
-        sync: false
-      - key: DB_PASSWORD
-        sync: false
-      - key: DB_PORT
-        value: 5432
       - key: SUPABASE_URL
         sync: false
       - key: SUPABASE_KEY
         sync: false
       - key: SUPABASE_BUCKET_NAME
         value: profile-pictures
-      - key: ALLOWED_ORIGINS
-        value: "*"
+      - key: JWT_SECRET
+        generateValue: true
