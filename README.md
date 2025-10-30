@@ -1,6 +1,8 @@
-# AuraMatch Backend API Documentation
+<div align="center">
+  <h1>AuraMatch ---> Backend</h1>
+</div>
 
-A dating application backend built with Node.js, Express, PostgreSQL, and Supabase for profile picture storage.
+This is the server/api side of AuraMatch built with Node.js, Express, PostgreSQL, and Supabase.
 
 ## Table of Contents
 
