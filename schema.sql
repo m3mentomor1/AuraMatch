@@ -2,7 +2,7 @@
 -- Run this in PostgreSQL to create the database schema
 
 -- Create database (run this first)
--- CREATE DATABASE auramatch;
+CREATE DATABASE auramatch;
 
 -- Connect to auramatch database and run the rest
 
