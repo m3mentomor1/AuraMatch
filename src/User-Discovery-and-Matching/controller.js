@@ -1,10 +1,40 @@
 // backend/src/User-Discovery-and-Matching/controller.js
 const pool = require("../../db");
 
+// Haversine formula to calculate distance between two coordinates
+const calculateDistance = (lat1, lon1, lat2, lon2) => {
+  const R = 6371; // Earth's radius in kilometers
+  const dLat = (lat2 - lat1) * (Math.PI / 180);
+  const dLon = (lon2 - lon1) * (Math.PI / 180);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * (Math.PI / 180)) *
+      Math.cos(lat2 * (Math.PI / 180)) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+};
+
 const getAvailableUsers = async (req, res) => {
   try {
+    const { minAge, maxAge, maxDistance, genders } = req.query;
+
+    // Get current user's location
+    const currentUserResult = await pool.query(
+      `SELECT latitude, longitude FROM users WHERE id = $1`,
+      [req.user.id]
+    );
+
+    if (currentUserResult.rows.length === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const currentUser = currentUserResult.rows[0];
+
     const result = await pool.query(
-      `SELECT u.id, u.first_name, u.last_name, u.age, u.bio, u.profile_picture 
+      `SELECT u.id, u.first_name, u.last_name, u.age, u.gender, u.bio, u.profile_picture,
+              u.latitude, u.longitude, u.location_city, u.location_country
        FROM users u
        WHERE u.id != $1 
        AND u.id NOT IN (
@@ -14,14 +44,56 @@ const getAvailableUsers = async (req, res) => {
       [req.user.id]
     );
 
-    const users = result.rows.map((user) => ({
-      id: user.id,
-      firstName: user.first_name,
-      lastName: user.last_name,
-      age: user.age,
-      bio: user.bio,
-      profilePicture: user.profile_picture,
-    }));
+    let users = result.rows.map((user) => {
+      const distance =
+        user.latitude &&
+        user.longitude &&
+        currentUser.latitude &&
+        currentUser.longitude
+          ? calculateDistance(
+              currentUser.latitude,
+              currentUser.longitude,
+              user.latitude,
+              user.longitude
+            )
+          : null;
+
+      return {
+        id: user.id,
+        firstName: user.first_name,
+        lastName: user.last_name,
+        age: user.age,
+        gender: user.gender,
+        bio: user.bio,
+        profilePicture: user.profile_picture,
+        distance: distance ? Math.round(distance) : null,
+        locationCity: user.location_city,
+        locationCountry: user.location_country,
+      };
+    });
+
+    // Apply age filter
+    if (minAge && maxAge) {
+      const min = parseInt(minAge);
+      const max = parseInt(maxAge);
+      users = users.filter((user) => user.age >= min && user.age <= max);
+    }
+
+    // Apply distance filter
+    if (maxDistance && maxDistance !== "500") {
+      const maxDist = parseInt(maxDistance);
+      users = users.filter(
+        (user) => user.distance !== null && user.distance <= maxDist
+      );
+    }
+
+    // Apply gender filter
+    if (genders && genders !== "male,female,other") {
+      const genderArray = genders.split(",").map((g) => g.toLowerCase().trim());
+      users = users.filter(
+        (user) => user.gender && genderArray.includes(user.gender.toLowerCase())
+      );
+    }
 
     res.json(users);
   } catch (error) {
@@ -95,7 +167,7 @@ const getMatches = async (req, res) => {
   try {
     const result = await pool.query(
       `SELECT 
-         u.id, u.first_name, u.last_name, u.age, u.bio, u.profile_picture,
+         u.id, u.first_name, u.last_name, u.age, u.gender, u.bio, u.profile_picture,
          m.created_at as matched_at,
          m.id as match_id,
          m.user_id as match_user_id,
@@ -143,6 +215,7 @@ const getMatches = async (req, res) => {
           firstName: match.first_name,
           lastName: match.last_name,
           age: match.age,
+          gender: match.gender,
           bio: match.bio,
           profilePicture: match.profile_picture,
           matchedAt: match.matched_at,
@@ -231,9 +304,91 @@ const unmatchUser = async (req, res) => {
   }
 };
 
+const updateLocation = async (req, res) => {
+  try {
+    const { latitude, longitude, locationCity, locationCountry } = req.body;
+
+    if (!latitude || !longitude) {
+      return res
+        .status(400)
+        .json({ error: "Latitude and longitude are required" });
+    }
+
+    const query = `
+      UPDATE users 
+      SET latitude = $1,
+          longitude = $2,
+          location_city = $3,
+          location_country = $4,
+          updated_at = CURRENT_TIMESTAMP
+      WHERE id = $5
+      RETURNING id, latitude, longitude, location_city, location_country
+    `;
+
+    const result = await pool.query(query, [
+      parseFloat(latitude),
+      parseFloat(longitude),
+      locationCity || null,
+      locationCountry || null,
+      req.user.id,
+    ]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    res.json({
+      message: "Location updated successfully",
+      location: {
+        latitude: result.rows[0].latitude,
+        longitude: result.rows[0].longitude,
+        city: result.rows[0].location_city,
+        country: result.rows[0].location_country,
+      },
+    });
+  } catch (error) {
+    console.error("Update location error:", error);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
+const getLocation = async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT latitude, longitude, location_city, location_country 
+       FROM users WHERE id = $1`,
+      [req.user.id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const user = result.rows[0];
+    const hasLocation = user.latitude !== null && user.longitude !== null;
+
+    res.json({
+      hasLocation,
+      location: hasLocation
+        ? {
+            latitude: user.latitude,
+            longitude: user.longitude,
+            city: user.location_city,
+            country: user.location_country,
+          }
+        : null,
+    });
+  } catch (error) {
+    console.error("Get location error:", error);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
 module.exports = {
   getAvailableUsers,
   recordSwipe,
   getMatches,
   unmatchUser,
+  updateLocation,
+  getLocation,
 };

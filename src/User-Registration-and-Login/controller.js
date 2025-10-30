@@ -10,14 +10,20 @@ const JWT_SECRET =
 
 const signUp = async (req, res) => {
   try {
-    const { email, password, firstName, lastName, age, bio } = req.body;
+    const { email, password, firstName, lastName, age, bio, gender } = req.body;
 
-    if (!email || !password || !firstName || !age) {
+    if (!email || !password || !firstName || !age || !gender) {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
     if (!req.file) {
       return res.status(400).json({ error: "Profile picture is required" });
+    }
+
+    // Validate gender
+    const validGenders = ["male", "female", "other"];
+    if (!validGenders.includes(gender.toLowerCase())) {
+      return res.status(400).json({ error: "Invalid gender value" });
     }
 
     const existingUser = await pool.query(
@@ -33,15 +39,16 @@ const signUp = async (req, res) => {
     const profilePictureUrl = await uploadToSupabase(req.file);
 
     const result = await pool.query(
-      `INSERT INTO users (email, password, first_name, last_name, age, bio, profile_picture) 
-       VALUES ($1, $2, $3, $4, $5, $6, $7) 
-       RETURNING id, email, first_name, last_name, age, bio, profile_picture, created_at`,
+      `INSERT INTO users (email, password, first_name, last_name, age, gender, bio, profile_picture) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8) 
+       RETURNING id, email, first_name, last_name, age, gender, bio, profile_picture, created_at`,
       [
         email,
         hashedPassword,
         firstName,
         lastName || null,
         parseInt(age),
+        gender.toLowerCase(),
         bio || null,
         profilePictureUrl,
       ]
@@ -62,6 +69,7 @@ const signUp = async (req, res) => {
         firstName: user.first_name,
         lastName: user.last_name,
         age: user.age,
+        gender: user.gender,
         bio: user.bio,
         profilePicture: user.profile_picture,
       },
@@ -108,6 +116,7 @@ const signIn = async (req, res) => {
         firstName: user.first_name,
         lastName: user.last_name,
         age: user.age,
+        gender: user.gender,
         bio: user.bio,
         profilePicture: user.profile_picture,
       },
@@ -123,7 +132,7 @@ const getCurrentUser = [
   async (req, res) => {
     try {
       const result = await pool.query(
-        "SELECT id, email, first_name, last_name, age, bio, profile_picture, created_at FROM users WHERE id = $1",
+        "SELECT id, email, first_name, last_name, age, gender, bio, profile_picture, created_at FROM users WHERE id = $1",
         [req.user.id]
       );
 
@@ -139,6 +148,7 @@ const getCurrentUser = [
         firstName: user.first_name,
         lastName: user.last_name,
         age: user.age,
+        gender: user.gender,
         bio: user.bio,
         profilePicture: user.profile_picture,
       });

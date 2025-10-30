@@ -14,13 +14,18 @@ CREATE TABLE IF NOT EXISTS users (
   first_name VARCHAR(100) NOT NULL,
   last_name VARCHAR(100),
   age INTEGER NOT NULL,
+  gender VARCHAR(20) NOT NULL,
   bio TEXT,
   profile_picture VARCHAR(255) NOT NULL,
+  latitude DECIMAL(10, 8),
+  longitude DECIMAL(11, 8),
+  location_city VARCHAR(255),
+  location_country VARCHAR(255),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Matches table (for future use)
+-- Matches table
 CREATE TABLE IF NOT EXISTS matches (
   id SERIAL PRIMARY KEY,
   user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
@@ -29,7 +34,7 @@ CREATE TABLE IF NOT EXISTS matches (
   UNIQUE(user_id, matched_user_id)
 );
 
--- Swipes table (for future use)
+-- Swipes table
 CREATE TABLE IF NOT EXISTS swipes (
   id SERIAL PRIMARY KEY,
   user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
@@ -39,7 +44,7 @@ CREATE TABLE IF NOT EXISTS swipes (
   UNIQUE(user_id, swiped_user_id)
 );
 
--- Messages table (for future use)
+-- Messages table
 CREATE TABLE IF NOT EXISTS messages (
   id SERIAL PRIMARY KEY,
   match_id INTEGER REFERENCES matches(id) ON DELETE CASCADE,
@@ -53,3 +58,10 @@ CREATE TABLE IF NOT EXISTS messages (
 CREATE INDEX IF NOT EXISTS idx_matches_user_id ON matches(user_id);
 CREATE INDEX IF NOT EXISTS idx_swipes_user_id ON swipes(user_id);
 CREATE INDEX IF NOT EXISTS idx_messages_match_id ON messages(match_id);
+CREATE INDEX IF NOT EXISTS idx_users_location ON users(latitude, longitude);
+
+-- Migration query to add gender column to existing database
+-- Run this separately if you already have the database set up:
+-- ALTER TABLE users ADD COLUMN IF NOT EXISTS gender VARCHAR(20);
+-- UPDATE users SET gender = 'other' WHERE gender IS NULL;
+-- ALTER TABLE users ALTER COLUMN gender SET NOT NULL;

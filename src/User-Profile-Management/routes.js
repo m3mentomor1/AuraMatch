@@ -15,4 +15,14 @@ router.put(
   profileController.updateProfile
 );
 
+// Update user location
+router.put(
+  "/auth/location",
+  authenticateToken,
+  profileController.updateLocation
+);
+
+// Get user location
+router.get("/auth/location", authenticateToken, profileController.getLocation);
+
 module.exports = router;
