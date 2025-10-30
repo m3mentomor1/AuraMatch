@@ -202,9 +202,26 @@ SUPABASE_BUCKET_NAME=profile-pictures
 ### Development Mode
 
 ```bash
+npm run dev
+# or
 npm start
 # or
 node server.js
+```
+
+**Note:** If `npm run dev` doesn't work, you may need to add a dev script to your `package.json`:
+
+```json
+"scripts": {
+  "start": "node server.js",
+  "dev": "nodemon server.js"
+}
+```
+
+For auto-restart on file changes, install nodemon:
+
+```bash
+npm install --save-dev nodemon
 ```
 
 The server will start on `http://localhost:5000`
