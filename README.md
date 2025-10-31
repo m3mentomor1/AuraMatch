@@ -4,7 +4,7 @@
 
 This is the server/api side of AuraMatch built with Node.js, Express, PostgreSQL, and Supabase.
 
-This backend is currently deployed on Render. Click to check status: https://auramatch-oaij.onrender.com
+This backend and its database is currently deployed on Render. Click to check status: https://auramatch-oaij.onrender.com
 
 ## Table of Contents
 
