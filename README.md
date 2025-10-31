@@ -6,7 +6,7 @@
   <img src="https://github.com/user-attachments/assets/28326939-cc78-4005-be8a-55f041c96262" alt="Logo">
 </div><br>
 
-**AuraMatch** is a modern, responsive dating app built with Next.js, TypeScript, Tailwind CSS, and shadcn/ui.
+**AuraMatch** is a modern, responsive dating web app built with Next.js, TypeScript, Tailwind CSS, and shadcn/ui.
 
 View app here (Hosted on Vercel): https://auramatch-frontend.vercel.app/
 
