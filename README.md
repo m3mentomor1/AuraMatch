@@ -8,8 +8,6 @@
 
 **AuraMatch** is a modern, responsive dating web app built with Next.js, TypeScript, Tailwind CSS, and shadcn/ui.
 
-View app here (Hosted on Vercel): https://auramatch-frontend.vercel.app/
-
 ## Table of Contents
 
 - [Features](#features)
